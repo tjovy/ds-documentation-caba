@@ -4,3 +4,4 @@ storybook-static
 .DS_Store
 .env.local
 tokens.figma-export.json
+n8n/backups/
