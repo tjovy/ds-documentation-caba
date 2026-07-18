@@ -33,8 +33,6 @@ Ensuite, le geste normal est simplement:
 
 Le repo normalise automatiquement les exports Tokens Studio verbeux comme `Primitive/Value`, `Semantic/Dark`, `Typography/Value`, `Space/Value`, `Radius/Value` et `component/component` vers la forme stable utilisee par Storybook: `core`, `semantic`, `typography`, `component`.
 
-Si Tokens Studio pousse uniquement les fondations sans groupe `component`, le repo conserve les composants existants depuis `tokens.component-fallback.json`. Ce fichier est un filet de securite pour Button/Card; il ne sert pas a modifier les couleurs au quotidien.
-
 Pour inspecter ce que le pipeline comprend, tu peux lancer:
 
 ```bash

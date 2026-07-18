@@ -9,7 +9,6 @@ import { loadJson, buildKnownCssVars } from './lib/tokens.js';
 import { validateComponentMarkdown } from './lib/markdown.js';
 import { loadFigmaCache } from './lib/figma.js';
 import { normalizeDesignTokens } from '../../../scripts/lib/token-normalizer.js';
-import { loadTokenFallbacks } from '../../../scripts/lib/load-token-fallbacks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,9 +26,7 @@ function loadRuntimeState(tokensOverride = null) {
   const rawTokens = tokensOverride && typeof tokensOverride === 'object'
     ? tokensOverride
     : loadJson(tokensPath);
-  const tokens = normalizeDesignTokens(rawTokens, {
-    fallbackTokens: loadTokenFallbacks(repoRoot),
-  });
+  const tokens = normalizeDesignTokens(rawTokens);
   return {
     tokens,
     figmaCache: loadFigmaCache(figmaCachePath),

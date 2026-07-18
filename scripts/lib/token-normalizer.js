@@ -103,22 +103,6 @@ function addWarning(warnings, message) {
   if (!warnings.includes(message)) warnings.push(message);
 }
 
-function mergeMissing(target, source) {
-  let added = 0;
-  if (!isObject(source)) return 0;
-
-  for (const [key, value] of Object.entries(source)) {
-    if (!(key in target)) {
-      target[key] = value;
-      added += 1;
-    } else if (isObject(target[key]) && isObject(value) && !isTokenNode(target[key]) && !isTokenNode(value)) {
-      added += mergeMissing(target[key], value);
-    }
-  }
-
-  return added;
-}
-
 function hasCanonicalShape(rawTokens) {
   return isObject(rawTokens) && [...CANONICAL_KEYS].some((key) => isObject(rawTokens[key]));
 }
@@ -174,19 +158,6 @@ export function normalizeDesignTokens(rawTokens, options = {}) {
 
   const fromTokensStudioSets = normalizeTokensStudioSets(rawTokens, warnings);
   mergeDeep(normalized, fromTokensStudioSets);
-
-  if (!normalized.component && isObject(options.fallbackTokens?.component)) {
-    normalized.component = normalizeTree(options.fallbackTokens.component);
-    addWarning(warnings, 'Aucun groupe component dans tokens.json. Utilisation de tokens.component-fallback.json pour conserver les composants existants.');
-  }
-
-  if (isObject(options.fallbackTokens?.semantic)) {
-    normalized.semantic ||= {};
-    const added = mergeMissing(normalized.semantic, normalizeTree(options.fallbackTokens.semantic));
-    if (added > 0) {
-      addWarning(warnings, 'Certains tokens semantic manquants ont ete completes depuis tokens.component-fallback.json.');
-    }
-  }
 
   const unknownSetKeys = Object.keys(rawTokens).filter((key) => (
     !key.startsWith('$') &&

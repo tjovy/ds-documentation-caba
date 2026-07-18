@@ -6,9 +6,7 @@ on:
       - main
     paths:
       - tokens.json
-      - tokens.component-fallback.json
       - scripts/build-css-variables.js
-      - scripts/lib/load-token-fallbacks.js
       - scripts/lib/token-normalizer.js
       - scripts/lib/token-css-naming.js
       - scripts/validate-css-contract.js
