@@ -5,19 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build-docs && tsc -b && vite build",
+    "build": "npm run build-css && npm run build-docs && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "export-figma-tokens": "node scripts/export-figma-variables.js",
     "export-figma-tokens:tokens": "node scripts/export-figma-variables.js --out tokens.json",
+    "build-css": "node scripts/build-css-variables.js",
     "sync-tokens": "node scripts/sync-tokens-preview.js main",
     "sync-tokens-preview": "node scripts/sync-tokens-preview.js",
-    "refresh-ds-content": "npm run sync-tokens && npm run build-docs",
+    "refresh-ds-content": "npm run sync-tokens && npm run build-css && npm run build-docs",
     "build-docs": "node scripts/generate-stories.js",
     "build-docs-preview": "npm run build-docs",
-    "storybook": "npm run build-docs && storybook dev -p 6006",
-    "storybook-preview": "npm run build-docs && storybook dev -p 6006",
-    "build-storybook": "npm run build-docs && storybook build"
+    "storybook": "npm run build-css && npm run build-docs && storybook dev -p 6006",
+    "storybook-preview": "npm run build-css && npm run build-docs && storybook dev -p 6006",
+    "build-storybook": "npm run build-css && npm run build-docs && storybook build"
   },
   "dependencies": {
     "react": "^19.2.0",
