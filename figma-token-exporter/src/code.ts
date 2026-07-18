@@ -31,6 +31,11 @@ type ExportResult = {
   componentCount: number;
 };
 
+type GitHubFile = {
+  sha?: string;
+  content?: string;
+};
+
 const SETTINGS_KEY = 'caba-github-settings-v1';
 const TOKENS_PATH = 'tokens.json';
 const DEFAULT_COMMIT_MESSAGE = 'chore(tokens): export depuis Figma';
@@ -585,6 +590,15 @@ async function githubRequest(url: string, token: string, init: RequestInit = {})
   });
 }
 
+async function readGitHubFile(baseUrl: string, branch: string, token: string): Promise<GitHubFile | null> {
+  const currentResponse = await githubRequest(`${baseUrl}?ref=${encodeURIComponent(branch)}`, token);
+  if (currentResponse.ok) return currentResponse.json() as Promise<GitHubFile>;
+  if (currentResponse.status === 404) return null;
+
+  const details = await currentResponse.text();
+  throw new Error(`Lecture GitHub impossible (${currentResponse.status}) : ${details.slice(0, 240)}`);
+}
+
 async function pushToGitHub(
   settings: StoredSettings,
   result: ExportResult,
@@ -593,38 +607,34 @@ async function pushToGitHub(
   if (!settings.token) throw new Error('Ajoute le token GitHub dans les réglages lors de la première utilisation.');
 
   const baseUrl = `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/${TOKENS_PATH}`;
-  const currentResponse = await githubRequest(`${baseUrl}?ref=${encodeURIComponent(settings.branch)}`, settings.token);
-  let currentSha: string | undefined;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const current = await readGitHubFile(baseUrl, settings.branch, settings.token);
 
-  if (currentResponse.ok) {
-    const current = await currentResponse.json() as { sha?: string; content?: string };
-    currentSha = current.sha;
-    if (current.content) {
+    if (current?.content) {
       const previousContent = decodeBase64(current.content);
       if (comparableTokens(previousContent) === comparableTokens(result.content)) return 'unchanged';
     }
-  } else if (currentResponse.status !== 404) {
-    const details = await currentResponse.text();
-    throw new Error(`Lecture GitHub impossible (${currentResponse.status}) : ${details.slice(0, 240)}`);
-  }
 
-  const body: Record<string, unknown> = {
-    message: validateCommitMessage(commitMessage),
-    content: encodeBase64(result.content),
-    branch: settings.branch,
-  };
-  if (currentSha) body.sha = currentSha;
+    const body: Record<string, unknown> = {
+      message: validateCommitMessage(commitMessage),
+      content: encodeBase64(result.content),
+      branch: settings.branch,
+    };
+    if (current?.sha) body.sha = current.sha;
 
-  const updateResponse = await githubRequest(baseUrl, settings.token, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!updateResponse.ok) {
+    const updateResponse = await githubRequest(baseUrl, settings.token, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (updateResponse.ok) return 'pushed';
+
     const details = await updateResponse.text();
+    if (updateResponse.status === 409 && attempt < 2) continue;
     throw new Error(`Push GitHub impossible (${updateResponse.status}) : ${details.slice(0, 240)}`);
   }
-  return 'pushed';
+
+  throw new Error('Push GitHub impossible après plusieurs tentatives.');
 }
 
 function send(type: string, payload: Record<string, unknown> = {}): void {
