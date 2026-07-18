@@ -85,7 +85,7 @@ function extractTextNodes(spec, trail = [], acc = []) {
 }
 
 function parseButtonVariantName(name) {
-  const match = String(name || '').match(/Size=(.*?),\s*State=(.*?),\s*Type=(.*)$/i);
+  const match = String(name || '').match(/Size=(.*?),\s*State=(.*?),\s*(?:Type|Style)=(.*)$/i);
   if (!match) return null;
 
   return {

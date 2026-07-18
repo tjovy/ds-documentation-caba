@@ -4,7 +4,7 @@
 // @ts-ignore
 const GITHUB_TOKEN: string = import.meta.env.STORYBOOK_GITHUB_TOKEN || '';
 // @ts-ignore
-const OWNER: string = import.meta.env.STORYBOOK_GITHUB_OWNER || 'atypic';
+const OWNER: string = import.meta.env.STORYBOOK_GITHUB_OWNER || 'tjovy';
 // @ts-ignore
 const REPO: string = import.meta.env.STORYBOOK_GITHUB_REPO || 'ds-documentation-caba';
 

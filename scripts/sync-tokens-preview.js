@@ -28,7 +28,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
 
-const REPO = process.env.STORYBOOK_GITHUB_REPOSITORY || 'atypic/ds-documentation-caba';
+const REPO = process.env.STORYBOOK_GITHUB_REPOSITORY || 'tjovy/ds-documentation-caba';
 const RAW_TOKENS_PATH = path.join(rootDir, 'tokens.json');
 const DOCS_PATH = path.join(rootDir, 'tokens-docs.json');
 const CSS_PATH = path.join(rootDir, 'src', 'stories', 'variables.css');

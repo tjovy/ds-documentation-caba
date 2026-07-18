@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    figma_file_key: 'qsQf4GmbB9336GltcfLlUq',\n    figma_token_header: 'X-Figma-Token',\n    component_ids: '122:13169,116:1228,116:1335',\n    cache_path: '/Users/atypic/Creative Cloud Files  info@atypic.fr C0B12A6F642A9F790A495F8A@bd4429a7642a9ed0495c8c.e/BOULOT/_PERSO/MICRO/FORMATIONS/design-system/github/ds-documentation/n8n/cache/figma-design-specs.json'\n  }\n}];"
+        "jsCode": "return [{\n  json: {\n    figma_file_key: 'rcJLbt1R5iE7MNW9JhcHzH',\n    figma_token_header: 'X-Figma-Token',\n    component_ids: '5:116,8:45',\n    cache_path: '/Users/atypic/Creative Cloud Files  info@atypic.fr C0B12A6F642A9F790A495F8A@bd4429a7642a9ed0495c8c.e/BOULOT/_PERSO/MICRO/WORKFLOWS/design-system/github/ds-documentation-caba/n8n/cache/figma-design-specs.json'\n  }\n}];"
       },
       "id": "53614a09-3e5a-47bf-912f-4600e1bc7584",
       "name": "Config",

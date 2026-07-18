@@ -46,8 +46,6 @@ URL a utiliser dans n8n:
 La semantique de chaque composant vit dans:
 
 - `registry/components/button.json`
-- `registry/components/input.json`
 - `registry/components/card.json`
-- `registry/components/badge.json`
 
 Les valeurs de tokens reelles sont lues depuis `tokens.json` du repo racine.

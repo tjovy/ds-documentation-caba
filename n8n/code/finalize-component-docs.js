@@ -222,7 +222,7 @@ return [
       invalidComponents,
       content: JSON.stringify(previousDocs, null, 2),
       contentBase64: Buffer.from(JSON.stringify(previousDocs, null, 2), 'utf-8').toString('base64'),
-      owner: 'atypic',
+      owner: 'tjovy',
       repo: 'ds-documentation-caba',
       filePath: 'tokens-docs.json',
       baseBranch: 'main',

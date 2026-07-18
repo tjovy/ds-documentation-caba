@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
-const defaultFileKey = 'qsQf4GmbB9336GltcfLlUq';
+const defaultFileKey = 'rcJLbt1R5iE7MNW9JhcHzH';
 const defaultOutput = path.join(rootDir, 'tokens.figma-export.json');
 const envPath = path.join(rootDir, '.env.local');
 
@@ -70,7 +70,7 @@ Usage:
   node scripts/export-figma-variables.js [options]
 
 Options:
-  --file-key <key>   Figma file key. Defaults to DS Demo (${defaultFileKey}).
+  --file-key <key>   Figma file key. Defaults to Test caba (${defaultFileKey}).
   --out <path>       Output path. Defaults to tokens.figma-export.json.
   --raw              Write the raw Figma API response instead of converted tokens.
   --help             Show this help.
