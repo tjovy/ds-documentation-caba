@@ -1,0 +1,53 @@
+{
+  "name": "input",
+  "title": "Input",
+  "htmlTag": "input",
+  "role": null,
+  "interactive": true,
+  "summary": "Champ de saisie texte avec etats focus, erreur et disabled.",
+  "allowedProps": ["size", "state", "disabled", "placeholder", "value", "onChange", "type", "name", "id"],
+  "slots": [],
+  "variants": [],
+  "sizes": ["sm", "md", "lg"],
+  "states": ["default", "focus", "error", "disabled"],
+  "usageRules": {
+    "do": [
+      "Utiliser un label associe pour chaque champ.",
+      "Afficher une erreur textuelle en plus de la couleur."
+    ],
+    "dont": [
+      "Ne pas transformer le composant en textarea ou select.",
+      "Ne pas inventer un etat non prevu."
+    ]
+  },
+  "accessibility": [
+    "Le composant doit rester un element <input>.",
+    "Conserver les attributs disabled, value et onChange.",
+    "Le placeholder ne remplace pas un label."
+  ],
+  "previewMatrix": {
+    "sizeAxis": "size",
+    "variantAxis": null,
+    "stateAxis": "state"
+  },
+  "requiredTokenPaths": [
+    "semantic.color.bg.primary",
+    "semantic.color.bg.disabled",
+    "semantic.color.text.primary",
+    "semantic.color.text.tertiary",
+    "semantic.color.text.disabled",
+    "semantic.color.border.default",
+    "semantic.color.border.strong",
+    "semantic.color.border.focus",
+    "semantic.color.border.disabled",
+    "core.color.danger.500",
+    "core.spacing.xs",
+    "core.spacing.sm",
+    "core.spacing.md",
+    "core.font.size.sm",
+    "core.font.size.md",
+    "core.font.size.lg",
+    "core.radius.md",
+    "core.borderWidth.default"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "figma-cache-refresh",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ec23a141-bc0d-402d-acd0-d2a3c5b2db0f",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    figma_file_key: 'qsQf4GmbB9336GltcfLlUq',\n    figma_token_header: 'X-Figma-Token',\n    component_ids: '122:13169,116:1228,116:1335',\n    cache_path: '/Users/atypic/Creative Cloud Files  info@atypic.fr C0B12A6F642A9F790A495F8A@bd4429a7642a9ed0495c8c.e/BOULOT/_PERSO/MICRO/FORMATIONS/design-system/github/ds-documentation/n8n/cache/figma-design-specs.json'\n  }\n}];"
+      },
+      "id": "53614a09-3e5a-47bf-912f-4600e1bc7584",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.figma.com/v1/files/{{ $json.figma_file_key }}/nodes?ids={{ $json.component_ids }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a378f507-25e7-4a29-928b-52adb28d910a",
+      "name": "Get Figma Nodes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wCafRyIqEdZEIlsI",
+          "name": "Header Auth account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst config = $('Config').first().json;\nconst response = $input.first().json;\n\nconst nodes = response.nodes || {};\n\n// --- Helpers ---\nfunction rgbaToCSS(color) {\n  if (!color) return null;\n  const r = Math.round((color.r || 0) * 255);\n  const g = Math.round((color.g || 0) * 255);\n  const b = Math.round((color.b || 0) * 255);\n  const a = color.a !== undefined ? color.a : 1;\n  return a < 1 ? `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})` : `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;\n}\n\nfunction extractFills(fills) {\n  if (!fills || !Array.isArray(fills)) return [];\n  return fills.filter(f => f.visible !== false).map(f => ({\n    type: f.type,\n    color: f.type === 'SOLID' ? rgbaToCSS(f.color) : null,\n    opacity: f.opacity\n  }));\n}\n\nfunction extractEffects(effects) {\n  if (!effects || !Array.isArray(effects)) return [];\n  return effects.filter(e => e.visible !== false).map(e => {\n    if (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') {\n      const color = rgbaToCSS(e.color);\n      const inset = e.type === 'INNER_SHADOW' ? 'inset ' : '';\n      return {\n        type: e.type,\n        css: `${inset}${e.offset?.x || 0}px ${e.offset?.y || 0}px ${e.radius || 0}px ${e.spread || 0}px ${color}`\n      };\n    }\n    return { type: e.type };\n  });\n}\n\nfunction extractTextStyle(node) {\n  if (node.type !== 'TEXT' || !node.style) return null;\n  const s = node.style;\n  return {\n    fontFamily: s.fontFamily,\n    fontSize: s.fontSize ? `${s.fontSize}px` : null,\n    fontWeight: s.fontWeight,\n    lineHeight: s.lineHeightPx ? `${Math.round(s.lineHeightPx)}px` : null,\n    letterSpacing: s.letterSpacing ? `${s.letterSpacing}px` : null,\n    textAlign: s.textAlignHorizontal?.toLowerCase()\n  };\n}\n\nfunction extractAutoLayout(node) {\n  if (!node.layoutMode || node.layoutMode === 'NONE') return null;\n  return {\n    direction: node.layoutMode === 'HORIZONTAL' ? 'row' : 'column',\n    gap: node.itemSpacing != null ? `${node.itemSpacing}px` : null,\n    paddingTop: node.paddingTop != null ? `${node.paddingTop}px` : null,\n    paddingRight: node.paddingRight != null ? `${node.paddingRight}px` : null,\n    paddingBottom: node.paddingBottom != null ? `${node.paddingBottom}px` : null,\n    paddingLeft: node.paddingLeft != null ? `${node.paddingLeft}px` : null,\n    alignItems: node.counterAxisAlignItems === 'CENTER' ? 'center' : (node.counterAxisAlignItems === 'MAX' ? 'flex-end' : 'flex-start'),\n    justifyContent: node.primaryAxisAlignItems === 'CENTER' ? 'center' : (node.primaryAxisAlignItems === 'SPACE_BETWEEN' ? 'space-between' : 'flex-start')\n  };\n}\n\nfunction extractDesignSpec(node) {\n  const spec = {\n    name: node.name,\n    type: node.type,\n    width: node.absoluteBoundingBox?.width ? `${Math.round(node.absoluteBoundingBox.width)}px` : null,\n    height: node.absoluteBoundingBox?.height ? `${Math.round(node.absoluteBoundingBox.height)}px` : null,\n    cornerRadius: node.cornerRadius != null ? `${node.cornerRadius}px` : null,\n    fills: extractFills(node.fills),\n    strokes: node.strokes ? node.strokes.filter(s => s.visible !== false).map(s => ({\n      color: rgbaToCSS(s.color),\n      weight: node.strokeWeight ? `${node.strokeWeight}px` : null,\n      align: node.strokeAlign\n    })) : [],\n    effects: extractEffects(node.effects),\n    autoLayout: extractAutoLayout(node),\n    textStyle: extractTextStyle(node),\n    opacity: node.opacity != null && node.opacity < 1 ? node.opacity : null\n  };\n  if (node.children && node.children.length > 0) {\n    spec.children = node.children.map(child => extractDesignSpec(child));\n  }\n  return spec;\n}\n\n// --- Process nodes ---\nconst designSpecs = {};\nfor (const [nodeId, nodeData] of Object.entries(nodes)) {\n  const doc = nodeData.document || nodeData;\n  if (!doc) continue;\n  designSpecs[doc.name] = extractDesignSpec(doc);\n}\n\n// --- Build cache ---\nconst cache = {\n  _meta: {\n    cached_at: new Date().toISOString(),\n    figma_file_key: config.figma_file_key,\n    source: 'Figma REST API /v1/files/:key/nodes',\n    node_ids: config.component_ids\n  },\n  figma_design_specs: designSpecs,\n  specs_count: Object.keys(designSpecs).length\n};\n\n// --- Save to file ---\nfs.writeFileSync(config.cache_path, JSON.stringify(cache, null, 2), 'utf8');\n\nreturn [{\n  json: {\n    message: '\\u2705 Cache Figma mis \\u00e0 jour avec succ\\u00e8s !',\n    cached_at: cache._meta.cached_at,\n    components: Object.keys(designSpecs),\n    specs_count: cache.specs_count,\n    cache_path: config.cache_path\n  }\n}];"
+      },
+      "id": "69e26ce4-bf4c-433a-958e-3c7201d6e2bf",
+      "name": "Parse + Save Cache",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Get Figma Nodes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Figma Nodes": {
+      "main": [
+        [
+          {
+            "node": "Parse + Save Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {},
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ds-documentation-figma-cache"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$metadata": {
+    "source": "seed",
+    "figmaFileKey": "rcJLbt1R5iE7MNW9JhcHzH",
+    "workflowVersion": "ssot-v2",
+    "note": "Seed minimal. n8n doit enrichir uniquement les entrees component.*.description."
+  },
+  "component": {
+    "button": {},
+    "card": {}
+  }
+}

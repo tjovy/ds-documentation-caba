@@ -1,0 +1,121 @@
+{
+  "figma": {
+    "fileKey": "rcJLbt1R5iE7MNW9JhcHzH",
+    "fileName": "Test caba",
+    "componentsPage": "Components"
+  },
+  "components": {
+    "button": {
+      "name": "button",
+      "title": "Button",
+      "requiresFigma": true,
+      "figma": {
+        "componentSetId": "5:116",
+        "variantCount": 27,
+        "properties": ["Label", "Show Icon"]
+      },
+      "variants": ["primary", "secondary", "ghost"],
+      "sizes": ["sm", "md", "lg"],
+      "states": ["default", "hover", "disabled"],
+      "previewMatrix": {
+        "columns": ["default", "hover", "disabled"],
+        "rows": [
+          "sm/primary",
+          "sm/secondary",
+          "sm/ghost",
+          "md/primary",
+          "md/secondary",
+          "md/ghost",
+          "lg/primary",
+          "lg/secondary",
+          "lg/ghost"
+        ]
+      },
+      "allowedCssVars": [
+        "--component-button-radius",
+        "--component-button-font-family",
+        "--component-button-font-weight",
+        "--component-button-icon-size",
+        "--component-button-sm-padding-x",
+        "--component-button-sm-padding-y",
+        "--component-button-sm-gap",
+        "--component-button-sm-min-width",
+        "--component-button-sm-min-height",
+        "--component-button-sm-font-size",
+        "--component-button-sm-line-height",
+        "--component-button-md-padding-x",
+        "--component-button-md-padding-y",
+        "--component-button-md-gap",
+        "--component-button-md-min-width",
+        "--component-button-md-min-height",
+        "--component-button-md-font-size",
+        "--component-button-md-line-height",
+        "--component-button-lg-padding-x",
+        "--component-button-lg-padding-y",
+        "--component-button-lg-gap",
+        "--component-button-lg-min-width",
+        "--component-button-lg-min-height",
+        "--component-button-lg-font-size",
+        "--component-button-lg-line-height",
+        "--component-button-primary-bg-default",
+        "--component-button-primary-bg-hover",
+        "--component-button-primary-bg-disabled",
+        "--component-button-primary-text-default",
+        "--component-button-primary-text-disabled",
+        "--component-button-primary-border-default",
+        "--component-button-primary-border-hover",
+        "--component-button-secondary-bg-default",
+        "--component-button-secondary-bg-hover",
+        "--component-button-secondary-bg-disabled",
+        "--component-button-secondary-text-default",
+        "--component-button-secondary-text-hover",
+        "--component-button-secondary-text-disabled",
+        "--component-button-secondary-border-default",
+        "--component-button-secondary-border-hover",
+        "--component-button-ghost-bg-default",
+        "--component-button-ghost-bg-hover",
+        "--component-button-ghost-text-default",
+        "--component-button-ghost-text-hover",
+        "--component-button-ghost-text-disabled",
+        "--component-button-ghost-border-default",
+        "--component-button-focus-ring"
+      ]
+    },
+    "card": {
+      "name": "card",
+      "title": "Card",
+      "requiresFigma": true,
+      "figma": {
+        "componentSetId": "8:45",
+        "variantCount": 8,
+        "properties": ["Title", "Description"]
+      },
+      "tones": ["default", "highlight"],
+      "media": ["off", "on"],
+      "states": ["default", "hover"],
+      "previewMatrix": {
+        "columns": ["default", "hover"],
+        "rows": ["default/off", "default/on", "highlight/off", "highlight/on"]
+      },
+      "allowedCssVars": [
+        "--component-card-width",
+        "--component-card-height-media-off",
+        "--component-card-height-media-on",
+        "--component-card-media-height",
+        "--component-card-media-radius",
+        "--component-card-padding",
+        "--component-card-gap",
+        "--component-card-radius",
+        "--component-card-bg-default",
+        "--component-card-bg-default-hover",
+        "--component-card-bg-highlight",
+        "--component-card-bg-highlight-hover",
+        "--component-card-border-default",
+        "--component-card-border-hover",
+        "--component-card-shadow-hover",
+        "--semantic-color-text-primary",
+        "--semantic-color-text-secondary"
+      ]
+    }
+  }
+}

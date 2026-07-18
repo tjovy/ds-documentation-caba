@@ -1,0 +1,87 @@
+{
+  "name": "button",
+  "title": "Button",
+  "htmlTag": "button",
+  "role": null,
+  "requiresFigma": true,
+  "interactive": true,
+  "summary": "Bouton d'action Caba issu du fichier Figma, avec variantes primary, secondary et ghost.",
+  "allowedProps": ["children", "variant", "size", "disabled", "onClick", "type", "icon"],
+  "slots": ["children", "icon"],
+  "variants": ["primary", "secondary", "ghost"],
+  "sizes": ["sm", "md", "lg"],
+  "states": ["default", "hover", "disabled"],
+  "usageRules": {
+    "do": [
+      "Utiliser primary pour l'action dominante d'une zone.",
+      "Conserver le type button, submit ou reset explicitement."
+    ],
+    "dont": [
+      "Ne pas utiliser pour la navigation quand un lien est attendu.",
+      "Ne pas inventer de variante hors primary, secondary et ghost."
+    ]
+  },
+  "accessibility": [
+    "Le composant doit rester un element <button>.",
+    "Le focus visible doit etre preserve.",
+    "L'etat disabled doit utiliser l'attribut disabled natif."
+  ],
+  "previewMatrix": {
+    "sizeAxis": "size",
+    "variantAxis": "variant",
+    "stateAxis": "state"
+  },
+  "renderRequirements": {
+    "mustInclude": [
+      "Montrer les 3 variantes exactes: primary, secondary, ghost.",
+      "Montrer les 3 tailles exactes: sm, md, lg.",
+      "Montrer les 3 etats exacts: default, hover, disabled.",
+      "Utiliser une prop de preview statique pour afficher les etats au lieu de simuler les evenements souris/clavier.",
+      "Respecter le gap icone/label et les paddings Figma selon la taille.",
+      "Conserver un vrai element button avec disabled natif pour les etats desactives."
+    ],
+    "forbiddenPatterns": [
+      "Aucune demo reduite a default/disabled uniquement.",
+      "Aucune implementation verbeuse basee sur une simulation complexe des evenements hover/active/focus si une preview statique suffit.",
+      "Aucune variante danger, brand ou success non declaree.",
+      "Aucune taille hors sm, md, lg.",
+      "Aucun style de demonstration arbitraire hors tokens autorises."
+    ]
+  },
+  "requiredTokenPaths": [
+    "semantic.color.action.primary.bg.default",
+    "semantic.color.action.primary.bg.hover",
+    "semantic.color.action.primary.bg.disabled",
+    "semantic.color.action.primary.text.default",
+    "semantic.color.action.primary.text.disabled",
+    "semantic.color.action.primary.border.default",
+    "semantic.color.action.primary.border.hover",
+    "semantic.color.action.primary.border.disabled",
+    "semantic.color.action.secondary.bg.default",
+    "semantic.color.action.secondary.bg.hover",
+    "semantic.color.action.secondary.bg.disabled",
+    "semantic.color.action.secondary.text.default",
+    "semantic.color.action.secondary.text.disabled",
+    "semantic.color.action.secondary.border.default",
+    "semantic.color.action.secondary.border.hover",
+    "semantic.color.action.secondary.border.disabled",
+    "semantic.color.action.ghost.bg.default",
+    "semantic.color.action.ghost.bg.hover",
+    "semantic.color.action.ghost.bg.disabled",
+    "semantic.color.action.ghost.text.default",
+    "semantic.color.action.ghost.text.disabled",
+    "semantic.color.action.ghost.border.default",
+    "semantic.color.action.ghost.border.hover",
+    "semantic.color.action.ghost.border.disabled",
+    "core.space.8",
+    "core.space.12",
+    "core.space.16",
+    "core.space.20",
+    "core.font.size.14",
+    "core.font.size.16",
+    "core.font.weight.medium",
+    "core.font.family.sans",
+    "core.radius.8",
+    "semantic.shadow.focus"
+  ]
+}

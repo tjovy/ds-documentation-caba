@@ -1,0 +1,51 @@
+{
+  "name": "badge",
+  "title": "Badge",
+  "htmlTag": "span",
+  "role": null,
+  "interactive": false,
+  "summary": "Etiquette compacte pour statut, categorie ou metadonnee visuelle.",
+  "allowedProps": ["variant", "children", "icon"],
+  "slots": ["children", "icon"],
+  "variants": ["primary", "secondary", "success", "warning", "danger", "neutral"],
+  "sizes": [],
+  "states": [],
+  "usageRules": {
+    "do": [
+      "Utiliser pour un label court ou un statut.",
+      "Conserver un contenu tres court."
+    ],
+    "dont": [
+      "Ne pas l'utiliser comme bouton.",
+      "Ne pas l'utiliser pour des phrases longues."
+    ]
+  },
+  "accessibility": [
+    "Le composant doit rester un element inline non interactif.",
+    "Si le badge est cliquable, il faut changer de composant."
+  ],
+  "previewMatrix": {
+    "sizeAxis": null,
+    "variantAxis": "variant",
+    "stateAxis": null
+  },
+  "requiredTokenPaths": [
+    "semantic.color.action.primary.bg.default",
+    "semantic.color.action.primary.text.default",
+    "semantic.color.action.secondary.bg.default",
+    "semantic.color.action.secondary.text.default",
+    "semantic.color.feedback.success.bg",
+    "semantic.color.feedback.success.text",
+    "semantic.color.feedback.warning.bg",
+    "semantic.color.feedback.warning.text",
+    "semantic.color.feedback.error.bg",
+    "semantic.color.feedback.error.text",
+    "core.color.neutral.100",
+    "core.color.neutral.800",
+    "core.spacing.xs",
+    "core.spacing.sm",
+    "core.font.size.xs",
+    "core.font.weight.medium",
+    "core.radius.full"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "name": "card",
+  "title": "Card",
+  "htmlTag": "article",
+  "role": null,
+  "requiresFigma": true,
+  "interactive": false,
+  "summary": "Carte Caba avec tons default/highlight, option media et etat hover.",
+  "allowedProps": ["tone", "media", "state", "children", "className"],
+  "slots": ["children"],
+  "variants": ["default", "highlight"],
+  "sizes": [],
+  "states": ["default", "hover"],
+  "usageRules": {
+    "do": [
+      "Utiliser pour presenter un contenu court dans une surface Caba.",
+      "Respecter les axes Figma Tone, Media et State."
+    ],
+    "dont": [
+      "Ne pas convertir la card en top/bottom ou en grille de tailles non presentes dans Figma.",
+      "Ne pas transformer la card en bouton completement interactif."
+    ]
+  },
+  "accessibility": [
+    "Preferer <article> ou <section> selon le contexte semantique.",
+    "Ne pas ajouter de role interactif si la carte ne mene pas a une action globale."
+  ],
+  "previewMatrix": {
+    "sizeAxis": null,
+    "variantAxis": "tone",
+    "stateAxis": "state"
+  },
+  "renderRequirements": {
+    "mustInclude": [
+      "Deux tons exacts: default et highlight.",
+      "Deux modes media exacts: off et on.",
+      "Deux etats exacts: default et hover.",
+      "Respecter la largeur 320px, la hauteur 168px sans media et 304px avec media.",
+      "Utiliser le media interne de 120px uniquement quand Media vaut on."
+    ],
+    "forbiddenPatterns": [
+      "Aucune matrice elevated/outline.",
+      "Aucune taille sm/md/lg.",
+      "Aucune variante top/bottom.",
+      "Aucun placeholder du type Card · variant · size."
+    ]
+  },
+  "requiredTokenPaths": [
+    "core.color.white",
+    "core.color.black",
+    "core.color.orange.400",
+    "core.color.orange.700",
+    "core.color.neutral.700",
+    "semantic.color.bg.surface",
+    "semantic.color.bg.surfaceHover",
+    "semantic.color.bg.brandSoft",
+    "semantic.color.bg.brand",
+    "semantic.color.border.default",
+    "semantic.color.text.primary",
+    "semantic.color.text.secondary",
+    "core.space.16",
+    "core.space.20",
+    "core.radius.8",
+    "core.radius.12",
+    "semantic.shadow.card",
+    "typography.heading.h2",
+    "typography.body.sm"
+  ],
+  "extraAllowedCssVars": [
+    "--component-card-width",
+    "--component-card-height-media-off",
+    "--component-card-height-media-on",
+    "--component-card-media-height",
+    "--component-card-media-radius",
+    "--component-card-padding",
+    "--component-card-gap",
+    "--component-card-radius",
+    "--component-card-bg-default",
+    "--component-card-bg-default-hover",
+    "--component-card-bg-highlight",
+    "--component-card-bg-highlight-hover",
+    "--component-card-border-default",
+    "--component-card-border-hover",
+    "--component-card-shadow-hover",
+    "--semantic-color-text-primary",
+    "--semantic-color-text-secondary"
+  ]
+}
