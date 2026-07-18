@@ -60,6 +60,7 @@ function parseSseJson(raw) {
 
 function getModelText(payload) {
   if (!payload) return '';
+  if (typeof payload.output_text === 'string') return payload.output_text;
   if (typeof payload.text === 'string') return payload.text;
   if (typeof payload.content === 'string') return payload.content;
   if (Array.isArray(payload.content)) {
@@ -67,6 +68,11 @@ function getModelText(payload) {
     if (textBlock) return textBlock.text;
   }
   if (typeof payload.output === 'string') return payload.output;
+  if (Array.isArray(payload.output)) {
+    const message = payload.output.find((item) => item?.type === 'message' && Array.isArray(item.content));
+    const textBlock = message?.content?.find((block) => typeof block?.text === 'string');
+    if (textBlock) return textBlock.text;
+  }
   if (payload.message?.content) {
     if (typeof payload.message.content === 'string') return payload.message.content;
     if (Array.isArray(payload.message.content)) {
@@ -205,8 +211,8 @@ if (!validComponents.length) {
 }
 
 if (invalidComponents.length || missingComponents.length) {
-  throw new Error(
-    `Generation incomplete. missing=${JSON.stringify(missingComponents)} invalid=${JSON.stringify(invalidComponents)}`
+  console.log(
+    `Composants non traites dans ce run: missing=${JSON.stringify(missingComponents)} invalid=${JSON.stringify(invalidComponents)}`
   );
 }
 

@@ -38,3 +38,22 @@ Le workflow peut continuer à calculer les hashes sur :
 - les tokens référencés sous `core`, `semantic`, `typography`
 
 Le champ `$metadata.figmaFileKey` permet de relier les artefacts au fichier Figma source.
+
+## Génération documentation + code
+
+Le workflow Caba utilise maintenant un node `Code` nommé `OpenAI GPT-5.6 Sol — Generate Markdown`.
+
+Raison du choix :
+
+- le contexte MCP est récupéré avant la génération, de façon explicite et traçable ;
+- le modèle ne décide pas quels outils appeler, il applique un contrat MCP déjà préparé ;
+- l'appel direct à l'OpenAI Responses API permet de fixer `gpt-5.6-sol`, `reasoning.effort`, `max_output_tokens` et le prompt exact ;
+- `Finalize + Validate` reste le garde-fou : seul le markdown/code validé par MCP peut être poussé dans `tokens-docs.json`.
+
+Variables d'environnement n8n nécessaires :
+
+- `OPENAI_API_KEY` : obligatoire pour appeler l'API OpenAI ;
+- `OPENAI_MODEL` : optionnel, défaut `gpt-5.6-sol` ;
+- `OPENAI_REASONING_EFFORT` : optionnel, défaut `high` ;
+- `OPENAI_REASONING_MODE` : optionnel, défaut `standard` ;
+- `OPENAI_MAX_OUTPUT_TOKENS` : optionnel, défaut `12000`.
