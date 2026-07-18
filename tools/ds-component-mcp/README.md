@@ -6,7 +6,7 @@ Serveur MCP minimal pour fiabiliser la generation de documentation et de code Re
 
 - expose la liste des composants documentables
 - retourne le contrat complet d'un composant
-- retourne le contexte de generation exploitable par Claude
+- retourne le contexte de generation compact exploitable par OpenAI
 - valide le Markdown produit par le modele
 
 ## Installation
@@ -48,4 +48,4 @@ La semantique de chaque composant vit dans:
 - `registry/components/button.json`
 - `registry/components/card.json`
 
-Les valeurs de tokens reelles sont lues depuis `tokens.json` du repo racine.
+Par defaut, les tokens sont lus depuis `tokens.json`. n8n transmet toutefois son snapshot GitHub exact au MCP pour eviter toute divergence avec le fichier local.

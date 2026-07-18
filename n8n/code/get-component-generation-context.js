@@ -1,5 +1,6 @@
 const MCP_ENDPOINT = 'http://127.0.0.1:3101/mcp';
 const MCP_TOOL_NAME = 'get_component_generation_context';
+const MAX_FIGMA_CACHE_AGE_HOURS = Number(process.env.MAX_FIGMA_CACHE_AGE_HOURS || 168);
 
 function parseSseJson(raw) {
   if (raw && typeof raw === 'object' && !Buffer.isBuffer(raw)) {
@@ -96,7 +97,11 @@ for (const item of incomingItems) {
     continue;
   }
 
-  const context = await callMcpTool.call(this, MCP_TOOL_NAME, { name: componentName });
+  const context = await callMcpTool.call(this, MCP_TOOL_NAME, {
+    name: componentName,
+    tokens: data.sourceTokens,
+    sourceRef: data.sourceRef,
+  });
 
   if (!context || !context.component || !context.component.name) {
     throw new Error(`Contexte MCP incomplet pour ${componentName}`);
@@ -104,6 +109,18 @@ for (const item of incomingItems) {
 
   if (context.component.requiresFigma && !context.figma?.available) {
     throw new Error(`Figma indisponible pour ${componentName} alors que le workflow exige un contexte Figma`);
+  }
+
+  if (context.component.requiresFigma && !context.figma?.complete) {
+    throw new Error(
+      `Cache Figma incomplet pour ${componentName}: ${context.figma?.actualVariantCount || 0}/${context.figma?.expectedVariantCount || '?'} variantes`,
+    );
+  }
+
+  const cachedAt = Date.parse(context.figma?.cachedAt || '');
+  const cacheAgeHours = Number.isFinite(cachedAt) ? (Date.now() - cachedAt) / 3600000 : Infinity;
+  if (context.component.requiresFigma && cacheAgeHours > MAX_FIGMA_CACHE_AGE_HOURS) {
+    throw new Error(`Cache Figma trop ancien pour ${componentName}: ${Math.floor(cacheAgeHours)}h`);
   }
 
   outputItems.push({

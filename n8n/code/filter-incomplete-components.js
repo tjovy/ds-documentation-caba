@@ -1,4 +1,4 @@
-const WORKFLOW_VERSION = 'ssot-v3';
+const WORKFLOW_VERSION = 'ssot-v4';
 const MAX_COMPONENTS_PER_RUN = 5;
 const MCP_ENDPOINT = 'http://127.0.0.1:3101/mcp';
 
@@ -90,7 +90,7 @@ async function callMcpTool(name, args) {
   return payload.result?.structuredContent || null;
 }
 
-async function resolveReferencedTokenPaths(componentName, existingMeta) {
+async function resolveReferencedTokenPaths(componentName, existingMeta, tokens, sourceRef) {
   const metaPaths = Array.isArray(existingMeta?.referencedTokenPaths)
     ? existingMeta.referencedTokenPaths.filter(Boolean)
     : [];
@@ -99,7 +99,11 @@ async function resolveReferencedTokenPaths(componentName, existingMeta) {
     return metaPaths;
   }
 
-  const context = await callMcpTool.call(this, 'get_component_generation_context', { name: componentName });
+  const context = await callMcpTool.call(this, 'get_component_generation_context', {
+    name: componentName,
+    tokens,
+    sourceRef,
+  });
   const referencedTokens = Array.isArray(context?.contract?.referencedTokens)
     ? context.contract.referencedTokens
     : [];
@@ -112,6 +116,7 @@ async function resolveReferencedTokenPaths(componentName, existingMeta) {
 try {
   const bufferTokens = await this.helpers.getBinaryDataBuffer(0, 'data', 'Get tokens.json');
   const tokens = JSON.parse(bufferTokens.toString('utf8'));
+  const sourceRef = $('Get source main ref').first()?.json?.object?.sha || 'main';
 
   let docs = {};
   try {
@@ -128,7 +133,13 @@ try {
     const existingEntry = docs.component?.[componentName] || {};
     const existingMarkdown = existingEntry.description || '';
     const existingMeta = existingEntry._meta || {};
-    const referencedTokenPaths = await resolveReferencedTokenPaths.call(this, componentName, existingMeta);
+    const referencedTokenPaths = await resolveReferencedTokenPaths.call(
+      this,
+      componentName,
+      existingMeta,
+      tokens,
+      sourceRef,
+    );
 
     const componentSnapshot = components[componentName] || {};
     const referencedSnapshot = referencedTokenPaths.map((tokenPath) => ({
@@ -160,6 +171,8 @@ try {
           rawComponentTokens: componentSnapshot,
           existingMarkdown,
           previousDocs: docs,
+          sourceTokens: tokens,
+          sourceRef,
           sourceComparison: {
             workflowVersion: WORKFLOW_VERSION,
             reasons,
@@ -175,12 +188,8 @@ try {
   }
 
   if (!items.length) {
-    return [{
-      json: {
-        stop: true,
-        message: 'Aucune difference detectee entre tokens.json et tokens-docs.json pour les composants documentes.',
-      },
-    }];
+    console.log('Aucune difference detectee entre tokens.json et tokens-docs.json. Aucun appel OpenAI.');
+    return [];
   }
 
   return items.slice(0, MAX_COMPONENTS_PER_RUN);

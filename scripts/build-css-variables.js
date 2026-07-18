@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { cssVarNameFromPath, normalizeOutputPath } from './lib/token-css-naming.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,17 +36,6 @@ function getByPath(root, rawPath) {
       if (!current || typeof current !== 'object') return undefined;
       return current[key];
     }, root);
-}
-
-function cssVarNameFromPath(tokenPath) {
-  const normalizedPath = normalizeOutputPath(tokenPath);
-
-  return `--${normalizedPath
-    .replace(/\$/g, '')
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase()}`;
 }
 
 function isAlias(value) {
@@ -129,12 +119,6 @@ function findAliasTarget(tokens, rawValue) {
   return null;
 }
 
-function normalizeOutputPath(tokenPath) {
-  return tokenPath
-    .replace(/^component\.button\.size\./, 'component.button.')
-    .replace(/^component\.button\.variants\./, 'component.button.');
-}
-
 function collectTokens(tokens, node, tokenPath = '', acc = []) {
   if (!node || typeof node !== 'object' || Array.isArray(node)) return acc;
 
@@ -166,9 +150,18 @@ function collectTokens(tokens, node, tokenPath = '', acc = []) {
 }
 
 function buildCss(tokens) {
-  const declarations = collectTokens(tokens, tokens)
-    .sort((a, b) => a.path.localeCompare(b.path))
-    .map((token) => `  ${token.name}: ${token.value};`);
+  const collected = collectTokens(tokens, tokens).sort((a, b) => a.path.localeCompare(b.path));
+  const names = new Map();
+
+  for (const token of collected) {
+    const previous = names.get(token.name);
+    if (previous && previous !== token.path) {
+      throw new Error(`Duplicate CSS variable ${token.name}: ${previous} and ${token.path}`);
+    }
+    names.set(token.name, token.path);
+  }
+
+  const declarations = collected.map((token) => `  ${token.name}: ${token.value};`);
 
   return `/* Generated from tokens.json. Do not edit manually. */\n:root {\n${declarations.join('\n')}\n}\n`;
 }

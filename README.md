@@ -16,13 +16,13 @@ Source Figma :
 
 ## Raccordement workflow
 
-Dans ton workflow n8n `ds-token-mcp`, garde le principe :
+Le workflow n8n `ds-documentation-caba` applique ce principe :
 
 1. GitHub lit `tokens.json` sur `main`
 2. GitHub lit `tokens-docs.json`
 3. n8n détecte les composants incomplets sous `component`
 4. MCP/Figma fournit le contexte Button/Card
-5. Claude génère uniquement `tokens-docs.json`
+5. OpenAI génère uniquement le Markdown et le JSX de `tokens-docs.json`
 6. n8n pousse seulement `tokens-docs.json` dans une branche review
 
 Pour Caba, les variantes autorisées sont :
@@ -31,3 +31,12 @@ Pour Caba, les variantes autorisées sont :
 - Card : tons `default`, `highlight` ; média `off`, `on` ; états `default`, `hover`
 
 Important : retire toute consigne workflow qui force `danger` pour Button ou des dimensions `400x540` pour Card, car elles ne viennent pas de ce fichier Figma.
+
+## Vérification locale
+
+```bash
+npm run workflow:preflight
+npm run build-storybook
+```
+
+Le MCP et n8n sont installables comme services macOS persistants avec `npm run mcp:install-service` et `npm run n8n:install-service`.

@@ -1,124 +1,168 @@
+import { transform } from 'sucrase';
+
+const EXPECTED_SECTIONS = [
+  'description',
+  'spec',
+  "do & don't",
+  'code interactif (live editor)',
+];
+
 function extractTextContent(input) {
   if (!input) return '';
   if (typeof input === 'string') return input;
   return JSON.stringify(input, null, 2);
 }
 
-export function extractCodeBlock(markdown) {
+function normalizeHeading(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, ' ');
+}
+
+export function extractCodeBlocks(markdown) {
   const source = extractTextContent(markdown);
-  const match = source.match(/```(?:jsx|tsx|js)?\n([\s\S]*?)```/i);
-  return match ? match[1].trim() : '';
+  return [...source.matchAll(/```([a-z0-9-]*)\s*\n([\s\S]*?)```/gi)].map((match) => ({
+    language: String(match[1] || '').toLowerCase(),
+    code: match[2].trim(),
+  }));
+}
+
+export function extractCodeBlock(markdown) {
+  return extractCodeBlocks(markdown)[0]?.code || '';
 }
 
 export function validateMarkdownSections(markdown) {
   const source = extractTextContent(markdown);
-  const trimmed = source.trimStart();
+  const headings = [...source.matchAll(/^##\s+(.+)$/gm)].map((match) => normalizeHeading(match[1]));
   return {
-    startsWithDescription: /^##\s+Description\b/i.test(trimmed),
-    hasDescription: /##\s+Description\b/i.test(source),
-    hasSpec: /##\s+Spec\b/i.test(source),
-    hasDoDont: /##\s+Do\s*&\s*Don['’]t\b/i.test(source),
-    hasCode: /##\s+(?:💻\s*)?Code interactif(?:\s*\(Live Editor\))?\b/i.test(source) && /```/i.test(source),
+    headings,
+    exact: headings.length === EXPECTED_SECTIONS.length
+      && headings.every((heading, index) => heading === EXPECTED_SECTIONS[index]),
   };
 }
 
 export function extractCssVars(code) {
-  return [...new Set([...code.matchAll(/var\((--[a-z0-9-]+)\)/gi)].map((match) => match[1]))].sort();
+  return [...new Set(
+    [...String(code || '').matchAll(/var\(\s*(--[a-z0-9-]+)(?:\s*,[^)]*)?\s*\)/gi)]
+      .map((match) => match[1].toLowerCase())
+  )].sort();
 }
 
 export function extractLiteralValues(code, propName) {
   const regex = new RegExp(`${propName}\\s*=\\s*["']([a-z0-9-]+)["']`, 'gi');
-  return [
-    ...new Set(
-      [...code.matchAll(regex)]
-        .map((match) => match[1].toLowerCase())
-        .filter((value) => /^[a-z-]+$/i.test(value))
-    ),
-  ].sort();
+  return [...new Set([...code.matchAll(regex)].map((match) => match[1].toLowerCase()))].sort();
 }
 
 export function extractStringArrayValues(code, variableName) {
   const regex = new RegExp(`(?:const|let|var)\\s+${variableName}\\s*=\\s*\\[([\\s\\S]*?)\\]`, 'i');
   const match = code.match(regex);
   if (!match) return [];
+  return [...new Set([...match[1].matchAll(/["']([a-z0-9-]+)["']/gi)].map((item) => item[1].toLowerCase()))].sort();
+}
 
-  return [
-    ...new Set(
-      [...match[1].matchAll(/["']([a-z0-9-]+)["']/gi)]
-        .map((item) => item[1].toLowerCase())
-        .filter((value) => /^[a-z-]+$/i.test(value))
-    ),
-  ].sort();
+function sameValues(actual, expected) {
+  const left = [...new Set(actual)].sort();
+  const right = [...new Set(expected || [])].sort();
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function compileJsx(code) {
+  try {
+    transform(code, { transforms: ['jsx', 'imports'] });
+    return { valid: true, error: null };
+  } catch (error) {
+    return { valid: false, error: error?.message || String(error) };
+  }
+}
+
+function validateAxes(code, component) {
+  const checks = {};
+  const axes = component.name === 'card'
+    ? { tones: component.variants || [], media: ['off', 'on'], states: component.states || [] }
+    : { variants: component.variants || [], sizes: component.sizes || [], states: component.states || [] };
+
+  for (const [arrayName, expected] of Object.entries(axes)) {
+    const propName = arrayName === 'tones' ? 'tone' : arrayName.replace(/s$/, '');
+    const actual = [
+      ...extractStringArrayValues(code, arrayName),
+      ...extractStringArrayValues(code, arrayName.toUpperCase()),
+      ...extractLiteralValues(code, propName),
+    ];
+    checks[arrayName] = {
+      expected: [...expected].sort(),
+      actual: [...new Set(actual)].sort(),
+      exact: sameValues(actual, expected),
+    };
+  }
+
+  return checks;
 }
 
 export function validateComponentMarkdown(markdown, context) {
-  const sections = validateMarkdownSections(markdown);
-  const code = extractCodeBlock(markdown);
+  const source = extractTextContent(markdown);
+  const sections = validateMarkdownSections(source);
+  const blocks = extractCodeBlocks(source);
+  const code = blocks[0]?.code || '';
   const cssVars = extractCssVars(code);
-  const allowedCssVars = new Set(context.contract.allowedCssVars || []);
-  const referencedVariants = [
-    ...extractLiteralValues(code, 'variant'),
-    ...extractStringArrayValues(code, 'variants'),
-  ].filter((value, index, array) => array.indexOf(value) === index);
-  const referencedSizes = [
-    ...extractLiteralValues(code, 'size'),
-    ...extractStringArrayValues(code, 'sizes'),
-  ].filter((value, index, array) => array.indexOf(value) === index);
-
+  const allowedCssVars = new Set((context.contract.allowedCssVars || []).map((value) => value.toLowerCase()));
   const unknownCssVars = cssVars.filter((cssVar) => !allowedCssVars.has(cssVar));
-  const illegalVariants = referencedVariants.filter(
-    (variant) => !(context.component.variants || []).includes(variant)
-  );
-  const illegalSizes = referencedSizes.filter(
-    (size) => !(context.component.sizes || []).includes(size)
-  );
-  const hasRenderCall = /render\s*\(/.test(code);
-  const rootTagOk = code.includes(`<${context.component.htmlTag}`) || code.includes(`${context.component.title} = (`) || code.includes(`${context.component.title}={`);
-  const isGenericCardMatrixDemo =
-    context.component?.name === 'card'
-    && code.includes('variant = {variant}')
-    && code.includes('Card · ${variant} · ${size}')
-    && code.includes('Conteneur de contenu regroupant des informations homogènes avec padding et élévation pilotés par tokens.');
-  const buttonMatrixHints = context.component?.name === 'button'
-    ? {
-        hasVariants: (context.component.variants || []).every((token) => code.includes(token)),
-        hasSizes: (context.component.sizes || []).every((token) => code.includes(token)),
-        hasStates: (context.component.states || []).every((token) => code.toLowerCase().includes(token)),
-      }
-    : null;
-  const hasCompleteButtonMatrix = !buttonMatrixHints || (
-    buttonMatrixHints.hasVariants
-    && buttonMatrixHints.hasSizes
-    && buttonMatrixHints.hasStates
-  );
+  const compilation = compileJsx(code);
+  const axes = validateAxes(code, context.component);
+  const invalidAxes = Object.entries(axes).filter(([, check]) => !check.exact).map(([name]) => name);
+  const hasSingleJsxBlock = blocks.length === 1 && ['jsx', 'js'].includes(blocks[0]?.language);
+  const hasCssTemplate = /\bconst\s+css\s*=\s*`[\s\S]*?`;/.test(code);
+  const endsWithRender = /render\(\s*<Demo\s*\/>\s*\);\s*$/.test(code);
+  const rootTagOk = new RegExp(`<${context.component.htmlTag}\\b`, 'i').test(code);
+  const hasNativeDisabled = context.component.name !== 'button' || /<button\b[\s\S]*?\bdisabled(?:\s|=|\})/i.test(code);
+  const hasCssVarFallback = /var\(\s*--[a-z0-9-]+\s*,/i.test(code);
+  const hasDynamicCssVar = /var\([^)]*\$\{|--[a-z0-9-]*\$\{/i.test(code);
+  const hardcodedColors = [...new Set([
+    ...(code.match(/#[0-9a-f]{3,8}\b/gi) || []),
+    ...(code.match(/\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)/gi) || []),
+  ])];
+  const forbiddenPatterns = [
+    /\b(?:import|export)\b/,
+    /\b(?:fetch|XMLHttpRequest|WebSocket|eval)\s*\(/,
+    /\bnew\s+Function\b/,
+    /\b(?:window|document|location|localStorage|sessionStorage)\b/,
+    /https?:\/\//i,
+    /<(?:script|iframe)\b/i,
+  ].filter((pattern) => pattern.test(code)).map((pattern) => pattern.source);
+
+  const valid = sections.exact
+    && hasSingleJsxBlock
+    && compilation.valid
+    && hasCssTemplate
+    && endsWithRender
+    && rootTagOk
+    && hasNativeDisabled
+    && unknownCssVars.length === 0
+    && invalidAxes.length === 0
+    && !hasCssVarFallback
+    && !hasDynamicCssVar
+    && hardcodedColors.length === 0
+    && forbiddenPatterns.length === 0;
 
   return {
-    valid:
-      sections.startsWithDescription &&
-      sections.hasDescription &&
-      sections.hasSpec &&
-      sections.hasDoDont &&
-      sections.hasCode &&
-      unknownCssVars.length === 0 &&
-      illegalVariants.length === 0 &&
-      illegalSizes.length === 0 &&
-      hasRenderCall &&
-      rootTagOk &&
-      hasCompleteButtonMatrix &&
-      !isGenericCardMatrixDemo,
+    valid,
     checks: {
       sections,
-      hasRenderCall,
+      hasSingleJsxBlock,
+      compilation,
+      hasCssTemplate,
+      endsWithRender,
       rootTagOk,
-      isGenericCardMatrixDemo,
-      buttonMatrixHints,
-      hasCompleteButtonMatrix,
-      referencedVariants,
-      referencedSizes,
+      hasNativeDisabled,
+      axes,
+      invalidAxes,
       cssVars,
       unknownCssVars,
-      illegalVariants,
-      illegalSizes,
+      hasCssVarFallback,
+      hasDynamicCssVar,
+      hardcodedColors,
+      forbiddenPatterns,
     },
   };
 }

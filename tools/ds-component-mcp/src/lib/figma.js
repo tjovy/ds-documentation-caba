@@ -85,13 +85,17 @@ function extractTextNodes(spec, trail = [], acc = []) {
 }
 
 function parseButtonVariantName(name) {
-  const match = String(name || '').match(/Size=(.*?),\s*State=(.*?),\s*(?:Type|Style)=(.*)$/i);
-  if (!match) return null;
+  const properties = Object.fromEntries(
+    String(name || '').split(',').map((part) => part.trim().split('=').map((value) => value.trim().toLowerCase())),
+  );
+  if (!properties.size || !properties.state || !(properties.style || properties.type)) return null;
 
+  const sizeAliases = { small: 'sm', medium: 'md', large: 'lg' };
+  const rawSize = properties.size;
   return {
-    size: match[1].trim().toLowerCase(),
-    state: match[2].trim().toLowerCase(),
-    variant: match[3].trim().toLowerCase(),
+    size: sizeAliases[rawSize] || rawSize,
+    state: properties.state,
+    variant: properties.style || properties.type,
   };
 }
 
@@ -160,7 +164,10 @@ function extractButtonBlueprint(spec) {
     if (!variants[meta.variant]) {
       variants[meta.variant] = {};
     }
-    variants[meta.variant][meta.state] = entry;
+    if (!variants[meta.variant][meta.state]) {
+      variants[meta.variant][meta.state] = {};
+    }
+    variants[meta.variant][meta.state][meta.size] = entry;
 
     if (!sizes[meta.size]) {
       sizes[meta.size] = {
@@ -189,7 +196,7 @@ function extractButtonBlueprint(spec) {
     availableVariants: [...availableVariants].sort(),
     availableSizes: [...availableSizes].sort(),
     availableStates: [...availableStates].sort(),
-    focusNote: 'Aucune variante Focus explicite dans Figma. Utiliser le focus ring issu des tokens pour completer la matrice demandee.',
+    variantCount: (spec.children || []).filter((child) => parseButtonVariantName(child?.name)).length,
   };
 }
 
@@ -198,26 +205,20 @@ function extractCardBlueprint(spec, relatedSpecs = []) {
     return null;
   }
 
-  const textSpec = relatedSpecs.find(({ key }) => key === 'Card/Text')?.spec || null;
-  const textNodes = extractTextNodes(textSpec || spec);
-  const byName = (matcher) => textNodes.find((node) => matcher(node.name || '', node.path || '')) || null;
-  const categoryText = byName((name, path) => name === 'Button' && path.includes('ButtonCategory'));
-  const likesText = byName((name, path) => name === 'Button' && path.includes('ButtonLike'));
-  const titleText = byName((name) => name === 'Titre');
-  const subtitleText = byName((name) => name === 'Sous-titre');
-  const bodyText = byName((name) => name.includes('Nullam quis risus'));
-  const bottomMetaText = textNodes.filter((node) => node.name === 'Button' && node.path.includes('.button-bottom'));
+  const parseName = (name) => {
+    const match = String(name || '').match(/Tone=(.*?),\s*Media=(.*?),\s*State=(.*)$/i);
+    if (!match) return null;
+    return { tone: match[1].trim().toLowerCase(), media: match[2].trim().toLowerCase(), state: match[3].trim().toLowerCase() };
+  };
   const variants = (spec.children || []).map((child) => {
-    const mediaNode = (child.children || []).find((item) => item?.name === 'Visuels');
-    const contentNode = (child.children || []).find((item) => item?.name === 'Card/Text');
-    const frameNode = (contentNode?.children || []).find((item) => item?.name === 'Frame');
-    const topRow = (frameNode?.children || []).find((item) => item?.name === '.button-top');
-    const bottomRow = (frameNode?.children || []).find((item) => item?.name === '.button-bottom');
-    const mediaPosition = /Visuel=Bottom/i.test(child.name || '') ? 'bottom' : 'top';
+    const axes = parseName(child?.name);
+    if (!axes) return null;
+    const mediaNode = (child.children || []).find((item) => /^media$/i.test(item?.name || '')) || null;
+    const contentNode = (child.children || []).find((item) => !/^media$/i.test(item?.name || '')) || null;
 
     return {
       name: child.name || null,
-      variant: mediaPosition,
+      ...axes,
       width: child.width || null,
       height: child.height || null,
       cornerRadius: child.cornerRadius || null,
@@ -230,42 +231,17 @@ function extractCardBlueprint(spec, relatedSpecs = []) {
             cornerRadii: mediaNode.cornerRadii || null,
           }
         : null,
-      content: frameNode
+      content: contentNode?.autoLayout
         ? {
-            gap: frameNode.autoLayout?.gap || null,
-            paddingTop: frameNode.autoLayout?.paddingTop || null,
-            paddingRight: frameNode.autoLayout?.paddingRight || null,
-            paddingBottom: frameNode.autoLayout?.paddingBottom || null,
-            paddingLeft: frameNode.autoLayout?.paddingLeft || null,
+            gap: contentNode.autoLayout.gap || null,
+            paddingTop: contentNode.autoLayout.paddingTop || null,
+            paddingRight: contentNode.autoLayout.paddingRight || null,
+            paddingBottom: contentNode.autoLayout.paddingBottom || null,
+            paddingLeft: contentNode.autoLayout.paddingLeft || null,
           }
         : null,
-      rows: {
-        top: topRow?.autoLayout
-          ? {
-              gap: topRow.autoLayout.gap || null,
-              alignItems: topRow.autoLayout.alignItems || null,
-              justifyContent: topRow.autoLayout.justifyContent || null,
-            }
-          : null,
-        bottom: bottomRow?.autoLayout
-          ? {
-              gap: bottomRow.autoLayout.gap || null,
-              alignItems: bottomRow.autoLayout.alignItems || null,
-              justifyContent: bottomRow.autoLayout.justifyContent || null,
-            }
-          : null,
-      },
     };
-  });
-
-  const playButton = variants
-    .map((item) => item && spec.children.find((child) => child.name === item.name))
-    .filter(Boolean)
-    .map((child) => (child.children || []).find((item) => item?.name === 'Visuels'))
-    .filter(Boolean)
-    .map((mediaNode) => (mediaNode.children || []).find((item) => item?.name === 'Button-play'))
-    .filter(Boolean)[0];
-  const playVector = playButton?.children?.[0]?.children?.[0] || null;
+  }).filter(Boolean);
 
   return {
     shell: {
@@ -276,24 +252,10 @@ function extractCardBlueprint(spec, relatedSpecs = []) {
       shadow: variants[0]?.shadow || null,
     },
     variants,
-    playButton: playButton
-      ? {
-          size: playButton.width || null,
-          background: playButton.fills?.[0]?.color || null,
-          backgroundOpacity: playButton.fills?.[0]?.opacity ?? null,
-          radius: playButton.cornerRadius || null,
-          iconSize: playButton.children?.[0]?.width || null,
-          iconStroke: playVector?.strokes?.[0]?.color || null,
-        }
-      : null,
-    textHierarchy: {
-      category: categoryText,
-      likes: likesText,
-      title: titleText,
-      subtitle: subtitleText,
-      body: bodyText,
-      bottomMeta: bottomMetaText,
-    },
+    availableTones: [...new Set(variants.map((item) => item.tone))].sort(),
+    availableMedia: [...new Set(variants.map((item) => item.media))].sort(),
+    availableStates: [...new Set(variants.map((item) => item.state))].sort(),
+    variantCount: variants.length,
   };
 }
 

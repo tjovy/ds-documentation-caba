@@ -7,7 +7,7 @@ Le workflow canonique du Design System est le suivant:
 3. GitHub genere **`build/css/variables.css`** depuis **`tokens.json`**
 4. Le workflow n8n lit les dernieres versions de **`tokens.json`** et **`tokens-docs.json`**
 5. n8n compare les composants documentes avec les tokens courants
-6. Si un composant a derive, n8n appelle **Claude + le MCP Figma**
+6. Si un composant a derive, n8n appelle **OpenAI**, puis valide localement avec le MCP
 7. n8n met a jour **uniquement `tokens-docs.json`**
 8. n8n cree une branche GitHub et y pousse **`tokens-docs.json`**
 9. Storybook charge:
@@ -107,7 +107,8 @@ Les fichiers canoniques du workflow sont:
 - `n8n/code/get-component-generation-context.js`
 - `n8n/code/finalize-component-docs.js`
 - `n8n/prompts/component-doc-generator.md`
-- `n8n/workflows/ds-token-mcp.json`
+- `n8n/code/openai-generate-markdown.template.js`
+- `n8n/workflows/ds-documentation-caba.json`
 
 Le workflow live n8n doit rester aligne sur ces fichiers.
 
@@ -116,8 +117,7 @@ Le workflow live n8n doit rester aligne sur ces fichiers.
 Lancer le serveur local:
 
 ```bash
-cd tools/ds-component-mcp
-npm run start:http
+npm run mcp:install-service
 ```
 
 Endpoint:

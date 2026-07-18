@@ -8,7 +8,20 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([globalIgnores(['dist']), {
+export default defineConfig([
+  globalIgnores(['dist', 'storybook-static', 'n8n/code', 'n8n/workflows', 'n8n/backups']),
+  {
+    files: ['src/**/*.{js,jsx}'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parserOptions: { ecmaFeatures: { jsx: true } },
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: { 'no-unused-vars': 'off' },
+  },
+  {
   files: ['**/*.{ts,tsx}'],
   extends: [
     js.configs.recommended,
@@ -17,7 +30,11 @@ export default defineConfig([globalIgnores(['dist']), {
     reactRefresh.configs.vite,
   ],
   languageOptions: {
-    ecmaVersion: 2020,
-    globals: globals.browser,
+    ecmaVersion: 2022,
+    globals: { ...globals.browser, ...globals.node },
+  },
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
   },
 }, ...storybook.configs["flat/recommended"]])

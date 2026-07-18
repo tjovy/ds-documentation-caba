@@ -1,19 +1,9 @@
 // src/utils/tokenDocsLoader.ts
 
-// 🔒 Lecture statique exacte pour que Storybook/Vite puisse injecter les variables
-// @ts-ignore
-const GITHUB_TOKEN: string = import.meta.env.STORYBOOK_GITHUB_TOKEN || '';
 // @ts-ignore
 const OWNER: string = import.meta.env.STORYBOOK_GITHUB_OWNER || 'tjovy';
 // @ts-ignore
 const REPO: string = import.meta.env.STORYBOOK_GITHUB_REPO || 'ds-documentation-caba';
-
-console.log('[tokenDocsLoader] CONFIG:', {
-  hasToken: !!GITHUB_TOKEN,
-  tokenPrefix: GITHUB_TOKEN ? GITHUB_TOKEN.substring(0, 8) + '...' : 'NONE',
-  owner: OWNER,
-  repo: REPO
-});
 
 // --- INTERFACES TYPESCRIPT ---
 
@@ -41,25 +31,10 @@ export interface SaveResult {
 // --- HELPERS ---
 
 /**
- * Fetch avec fallback : si le token est invalide (401), retente sans auth.
- * Utile car le repo est public mais un token expiré provoque un rejet.
+ * Les lectures restent publiques. Le jeton d'ecriture ne quitte jamais le serveur Vite local.
  */
 const githubFetch = async (url: string, accept: string): Promise<Response> => {
-  const headers: Record<string, string> = { 'Accept': accept };
-
-  if (GITHUB_TOKEN) {
-    headers['Authorization'] = `Bearer ${GITHUB_TOKEN}`;
-    const res = await fetch(url, { headers });
-
-    if (res.status === 401) {
-      console.warn('[tokenDocsLoader] Token expiré (401), retry sans auth...');
-      delete headers['Authorization'];
-      return fetch(url, { headers });
-    }
-    return res;
-  }
-
-  return fetch(url, { headers });
+  return fetch(url, { headers: { Accept: accept } });
 };
 
 const resolveBranchSha = async (branch: string): Promise<string | null> => {
@@ -172,55 +147,19 @@ export const loadBranchDiff = async (branch: string): Promise<BranchDiffResult> 
   return { diffs, fullBranchDocs: branchDocs };
 };
 
-const encodeBase64UTF8 = (str: string): string => {
-  return btoa(
-    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_match, p1) => {
-      return String.fromCharCode(parseInt(p1, 16));
-    })
-  );
-};
-
 export const saveTokenDocs = async (
   newDocs: Record<string, any>, 
   branch: string, 
   message: string
 ): Promise<SaveResult> => {
   try {
-    let fileSha: string | undefined;
-    
-    try {
-      const fileInfo = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/tokens-docs.json?ref=${branch}`, {
-        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
-      });
-      if (fileInfo.ok) {
-        const json = await fileInfo.json();
-        fileSha = json.sha;
-      }
-    } catch(e) {}
-
-    const jsonStr = JSON.stringify(newDocs, null, 2);
-    const contentBase64 = encodeBase64UTF8(jsonStr);
-
-    const body: Record<string, any> = { 
-      message, 
-      content: contentBase64, 
-      branch 
-    };
-    
-    if (fileSha) {
-      body.sha = fileSha;
-    }
-
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/tokens-docs.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
+    const res = await fetch('/api/token-docs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newDocs, branch, message }),
     });
-
-    return { success: res.ok };
+    const payload = await res.json().catch(() => ({}));
+    return { success: res.ok, error: payload.error };
   } catch (err: any) {
     return { success: false, error: err.message || 'Unknown error' };
   }

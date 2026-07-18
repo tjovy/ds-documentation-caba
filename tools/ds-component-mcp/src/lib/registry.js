@@ -19,8 +19,7 @@ function buildJsxBlueprint(definition) {
         "const VARIANTS = ['primary', 'secondary', 'ghost'];",
         "const SIZES = ['sm', 'md', 'lg'];",
         "const STATES = ['default', 'hover', 'disabled'];",
-        'const colorVar = (variant, part, state, fallback) => `var(--color-action-${variant}-${part}-${state}, ${fallback})`;',
-        'const sizeVar = (size, part, fallback) => `var(--button-size-${size}-${part}, ${fallback})`;',
+        'Construire les noms uniquement a partir des CSS vars exactes presentes dans contract.allowedCssVars.',
         'function Button({ variant = "primary", size = "md", state = "default", icon = false, children = "Button" }) { /* ... */ }',
         'function Demo() { /* matrice compacte uniquement */ }',
         'render(<Demo />);',
@@ -76,10 +75,20 @@ export function buildGenerationContext(registry, tokens, componentName, figmaCac
     return null;
   }
 
-  const componentTokens = buildComponentTokenEntries(tokens, componentName);
+  const isCssValueEntry = (item) => {
+    if (!item) return false;
+    if (typeof item.rawValue === 'string' && /^\{.+\}$/.test(item.rawValue) && item.resolvedValue === item.rawValue) {
+      return false;
+    }
+    if (item.resolvedValue && typeof item.resolvedValue === 'object' && !String(item.type || '').includes('shadow')) {
+      return false;
+    }
+    return item.resolvedValue !== null && item.resolvedValue !== undefined;
+  };
+  const componentTokens = buildComponentTokenEntries(tokens, componentName).filter(isCssValueEntry);
   const referencedTokens = (definition.requiredTokenPaths || [])
     .map((tokenPath) => buildTokenEntry(tokens, tokenPath))
-    .filter(Boolean);
+    .filter(isCssValueEntry);
 
   const extraAllowedCssVars = Array.isArray(definition.extraAllowedCssVars) ? definition.extraAllowedCssVars : [];
   const allowedCssVars = [
@@ -96,6 +105,15 @@ export function buildGenerationContext(registry, tokens, componentName, figmaCac
   const figmaBlueprint = extractDesignBlueprint(figmaMatch?.key || definition.title, figmaMatch?.spec || null, relatedFigmaSpecs);
   const designSpecDepth = figmaBlueprint ? 1 : 3;
   const jsxBlueprint = buildJsxBlueprint(definition);
+  const expectedVariantCount = definition.name === 'button'
+    ? (definition.variants || []).length * (definition.sizes || []).length * (definition.states || []).length
+    : definition.name === 'card'
+      ? (definition.variants || []).length * 2 * (definition.states || []).length
+      : null;
+  const actualVariantCount = figmaBlueprint?.variantCount ?? null;
+  const figmaComplete = !!figmaMatch
+    && !!figmaBlueprint
+    && (expectedVariantCount === null || actualVariantCount === expectedVariantCount);
 
   return {
     component: {
@@ -126,6 +144,9 @@ export function buildGenerationContext(registry, tokens, componentName, figmaCac
         relatedFigmaSpecs.map(({ key, spec }) => [key, summarizeDesignSpec(spec || null, 0, 2)])
       ),
       blueprint: figmaBlueprint,
+      complete: figmaComplete,
+      expectedVariantCount,
+      actualVariantCount,
     },
     contract: {
       componentTokens,

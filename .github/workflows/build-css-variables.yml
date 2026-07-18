@@ -7,6 +7,12 @@ on:
     paths:
       - tokens.json
       - scripts/build-css-variables.js
+      - scripts/lib/token-css-naming.js
+      - scripts/validate-css-contract.js
+      - tools/ds-component-mcp/registry/**
+      - tools/ds-component-mcp/src/lib/figma.js
+      - tools/ds-component-mcp/src/lib/registry.js
+      - tools/ds-component-mcp/src/lib/tokens.js
       - .github/workflows/build-css-variables.yml
   workflow_dispatch:
 
@@ -31,6 +37,9 @@ jobs:
 
       - name: Generate CSS variables
         run: node scripts/build-css-variables.js
+
+      - name: Validate CSS contract
+        run: node scripts/validate-css-contract.js
 
       - name: Commit generated CSS
         run: |

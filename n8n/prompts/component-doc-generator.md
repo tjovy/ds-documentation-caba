@@ -1,97 +1,22 @@
-Tu ecris la documentation composant stockee dans `tokens-docs.json`.
-Storybook lit `description` telle quelle, sans couche de correction ni normalisation.
-Le markdown produit doit donc etre directement affichable et le bloc JSX directement exploitable.
+Tu produis la documentation et le code de production d'un composant Caba pour `tokens-docs.json` et Storybook `react-live`.
 
-Single source of truth obligatoire:
-1. `figma.blueprint`, puis `figma.designSpec`
-2. `outputRequirements.jsxBlueprint`
-3. `component.renderRequirements` et `component.previewMatrix`
-4. `contract.referencedTokens`
-5. `tokens.json` / `build/css/variables.css` via `allowedCssVars`
+Sources de verite, dans cet ordre: blueprint Figma, contrat MCP, tokens fournis. N'invente aucune variante, taille, etat, prop, valeur, couleur ou variable CSS.
 
-Interdictions absolues:
-- ne rien inventer: variante, taille, etat, sous-composant, prop, CSS var, placeholder marketing
-- ne jamais utiliser une CSS var absente de `allowedCssVars`
-- ne pas dire que Figma est indisponible si `figma.available === true`
-- ne pas ajouter de sections markdown separees `## HTML`, `## CSS` ou `## JS`
-- ne pas produire de pseudo-balises de migration du type `<token_mapping>`, `<css>`, `<react>`
-- ne pas utiliser de CSS externe, de classes dependantes d'une feuille externe, ni de handlers interactifs juste pour simuler hover/active/focus
-- ne pas ecrire manuellement de balise `<style>` dans le JSX: Storybook injecte automatiquement `const css`
+Retourne uniquement du Markdown avec exactement ces quatre titres H2, dans cet ordre:
+1. `## Description`: 1 ou 2 phrases.
+2. `## Spec`: 4 a 6 puces courtes.
+3. `## Do & Don't`: 2 ou 3 Do et 2 ou 3 Don't.
+4. `## Code interactif (Live Editor)`: un seul bloc `jsx`.
 
-Ton objectif:
-- markdown valide et lisible tel quel dans Storybook
-- JSX `react-live` valide et autonome
-- code de dev complet pour chaque composant: HTML/JSX, CSS et JS, extrait par Storybook depuis le bloc live
-- rendu structurel fidele au contrat MCP
-- couleurs, espacements, rayons et typos tires uniquement des CSS vars autorisees
+Le bloc JSX est le code livre aux developpeurs. Il doit:
+- compiler sans import ni export;
+- commencer par `const css = \`...\`;`, puis contenir les helpers/composants et `const Demo = () => ...`;
+- se terminer exactement par `render(<Demo />);`;
+- utiliser uniquement les variables presentes dans `tokens` du contexte, sans fallback `var(--x, valeur)`;
+- ne contenir aucune couleur litterale hex/rgb/hsl, URL, asset externe, acces reseau ou global navigateur;
+- utiliser des classes scopees `.caba-button` ou `.caba-card`;
+- montrer toute la matrice d'axes declaree avec des arrays compacts et des `.map()`;
+- conserver un vrai `<button disabled={...}>` pour Button et un vrai `<article>` pour Card;
+- contenir HTML/JSX, CSS et logique JS utilisables directement, sans blocs de code separes.
 
-Regles de sortie:
-- retourne uniquement le markdown final, rien d'autre
-- exactement 4 sections, dans cet ordre:
-  `## Description`
-  `## Spec`
-  `## Do & Don't`
-  `## Code interactif (Live Editor)`
-- `Description`: 1 ou 2 phrases courtes maximum
-- `Spec`: 4 a 6 bullets courtes maximum
-- `Do`: 2 ou 3 bullets courtes maximum
-- `Don't`: 2 ou 3 bullets courtes maximum
-- un seul bloc ```jsx
-- pas de blocs separes ```html, ```css ou ```js: Storybook decoupe automatiquement le bloc ```jsx en panneaux HTML/CSS/JS
-- pas de tableau markdown
-- pas de XML, HTML documentaire ou meta-commentaire
-
-Regles Storybook:
-- le markdown doit etre autoportant: il doit rester comprehensible sans contexte externe
-- le bloc JSX doit etre complet, compilable et se terminer par `render(<Demo />);`
-- le bloc JSX ne doit dependre d'aucun import, fichier CSS, asset externe ou helper hors snippet
-- le bloc JSX doit contenir les 3 parties de code de dev dans cet ordre:
-  1. `const css = \`...\`;` avec le CSS du composant
-  2. les constantes, maps, helpers ou sous-composants JS necessaires
-  3. `const Demo = () => { return (...); };` avec le HTML/JSX rendu, puis `render(<Demo />);`
-- le CSS doit etre dans le template literal `const css`, jamais dans un fichier externe
-- le HTML doit etre le JSX retourne par `Demo`, pas un bloc markdown separe
-- le JS doit rester dans le meme bloc `jsx`, avant `Demo`
-- si une information n'est pas certaine, l'indiquer comme limite dans `## Spec` au lieu de l'inventer
-
-Regles JSX obligatoires:
-- inclure `const css = \`...\`;` meme si le CSS est court
-- utiliser des `className` stables et lisibles, scopes au composant, par exemple `.caba-button` ou `.caba-card`
-- ne pas redefinir les tokens dans `:root`
-- suivre `outputRequirements.jsxBlueprint` strictement quand il existe
-- le noeud racine rendu doit respecter `component.htmlTag` ou l'encapsuler explicitement si le blueprint le demande
-- pas de commentaires inutiles
-- pas de duplication massive: utiliser arrays, maps et helpers compacts
-- si `sizes` est vide, ne pas inventer `sm/md/lg`
-- si `variants` est vide, ne pas inventer de variantes
-- si `states` est vide, ne pas inventer `hover`, `active`, `focus`, `disabled`
-- si Figma montre `default/highlight`, `media on/off` ou `default/hover`, n'utiliser que ces variantes
-
-Regles couleur / tokens:
-- utiliser uniquement `allowedCssVars`
-- preferer les CSS vars explicitement presentes dans `referencedTokens`
-- si une valeur Figma n'a pas de token direct, utiliser seulement `var(--token-autorise, #valeurFigma)`
-- ne jamais hardcoder une couleur arbitraire de demo
-- ne pas inventer des vars du type `--badge-font-size`, `--card-padding`, etc. si elles ne sont pas autorisees
-
-Regles de coherences:
-- si le markdown existant est legacy, incomplet ou contradictoire, le regenerer depuis le contexte MCP
-- ne jamais reprendre des variantes ou des CSS vars du markdown existant si elles contredisent le contrat courant
-- utiliser `sourceComparison.reasons` uniquement comme explication de regeneration, pas comme source fonctionnelle
-
-Consignes speciales `button`:
-- vrai element `<button>`
-- montrer uniquement `primary`, `secondary`, `ghost`
-- montrer `sm`, `md`, `lg`
-- montrer uniquement `default`, `hover`, `disabled`
-- ne pas inventer `danger`, `active`, `focus` ou `pressed`
-- utiliser une prop statique `state` ou `previewState`
-- preferer des helpers compacts du type `colorVar(variant, part, state, fallback)` et `sizeVar(size, part, fallback)` plutot qu'un enorme objet de configuration
-- la demo doit etre une matrice compacte, pas une suite de cas isoles
-
-Consignes speciales `card`:
-- montrer uniquement les axes Figma: Tone `default/highlight`, Media `off/on`, State `default/hover`
-- respecter `320px` de largeur
-- media `on`: hauteur de carte `304px`, hauteur media `120px`
-- media `off`: hauteur de carte `168px`
-- ne pas inventer layout `400x540`, variante `top/bottom`, CTA ou image obligatoire
+Button: uniquement primary/secondary/ghost, sm/md/lg, default/hover/disabled. Card: uniquement tone default/highlight, media off/on, state default/hover. Une incertitude doit etre signalee dans Spec, jamais comblee par invention.

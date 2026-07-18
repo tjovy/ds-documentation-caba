@@ -8,7 +8,7 @@ Dans les nodes GitHub du workflow, pointer vers le nouveau repo Storybook/tokens
 - `repository`: à remplacer par le nom du nouveau repo
 - `filePath`: conserver `tokens.json` et `tokens-docs.json`
 
-## Prompt Claude
+## Prompt OpenAI
 
 Remplacer les contraintes spéciales existantes par :
 
@@ -54,6 +54,9 @@ Variables d'environnement n8n nécessaires :
 
 - `OPENAI_API_KEY` : obligatoire pour appeler l'API OpenAI ;
 - `OPENAI_MODEL` : optionnel, défaut `gpt-5.6-sol` ;
-- `OPENAI_REASONING_EFFORT` : optionnel, défaut `high` ;
+- `OPENAI_REASONING_EFFORT` : optionnel, défaut `medium` ;
 - `OPENAI_REASONING_MODE` : optionnel, défaut `standard` ;
-- `OPENAI_MAX_OUTPUT_TOKENS` : optionnel, défaut `12000`.
+- `OPENAI_MAX_OUTPUT_TOKENS` : optionnel, défaut `6000` ;
+- `OPENAI_MAX_REPAIR_TOKENS` : optionnel, défaut `4000`, utilisé une seule fois après un échec de validation.
+
+Le workflow n'envoie ni le Markdown historique ni le design Figma complet au modèle. L'empreinte `ssot-v4` évite tout appel OpenAI lorsque les tokens n'ont pas changé.

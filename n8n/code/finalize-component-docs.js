@@ -1,30 +1,8 @@
-const WORKFLOW_VERSION = 'ssot-v3';
+const WORKFLOW_VERSION = 'ssot-v4';
 const MCP_ENDPOINT = 'http://127.0.0.1:3101/mcp';
 const generatedItems = $input.all();
 const sourceItems = $('Filtrer les composants incomplets').all();
 const contextItems = $('Get component generation context').all();
-
-function stableStringify(value) {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableStringify(item)).join(',')}]`;
-  }
-
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
-  }
-
-  return JSON.stringify(value ?? null);
-}
-
-function simpleHash(value) {
-  const input = typeof value === 'string' ? value : stableStringify(value);
-  let hash = 2166136261;
-  for (let index = 0; index < input.length; index += 1) {
-    hash ^= input.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
-}
 
 function formatBranchTimestamp() {
   const formatter = new Intl.DateTimeFormat('sv-SE', {
@@ -42,7 +20,7 @@ function formatBranchTimestamp() {
     formatter.formatToParts(new Date()).map((part) => [part.type, part.value])
   );
 
-  return `${parts.year}-${parts.month}-${parts.day}-${parts.hour}-${parts.minute}-${parts.second}`;
+  return `${parts.year}-${parts.month}-${parts.day}-${parts.hour}-${parts.minute}-${parts.second}-${Date.now().toString(36).slice(-5)}`;
 }
 
 function parseSseJson(raw) {
@@ -139,26 +117,11 @@ for (let index = 0; index < generatedItems.length; index += 1) {
   const componentName = sourceItem.componentName || null;
   const markdown = sanitizeMarkdown(getModelText(generatedItems[index]?.json));
   const context = toContextPayload(contextItems[index]);
-  const referencedTokens = Array.isArray(context.contract?.referencedTokens) ? context.contract.referencedTokens : [];
-  const componentTokens = Array.isArray(context.contract?.componentTokens) ? context.contract.componentTokens : [];
-  const referencedTokenPaths = referencedTokens.map((item) => item.tokenPath).filter(Boolean);
-  const componentTokenHash = simpleHash(componentTokens.map((item) => ({
-    tokenPath: item.tokenPath,
-    cssVar: item.cssVar,
-    resolvedValue: item.resolvedValue,
-    type: item.type,
-  })));
-  const referencedTokenHash = simpleHash(referencedTokens.map((item) => ({
-    tokenPath: item.tokenPath,
-    cssVar: item.cssVar,
-    resolvedValue: item.resolvedValue,
-    type: item.type,
-  })));
-  const sourceHash = simpleHash({
-    workflowVersion: WORKFLOW_VERSION,
-    componentTokenHash,
-    referencedTokenHash,
-  });
+  const comparison = sourceItem.sourceComparison || {};
+  const referencedTokenPaths = comparison.referencedTokenPaths || [];
+  const componentTokenHash = comparison.componentTokenHash;
+  const referencedTokenHash = comparison.referencedTokenHash;
+  const sourceHash = comparison.currentSourceHash;
 
   if (!componentName || !markdown) {
     invalidComponents.push({
@@ -171,6 +134,8 @@ for (let index = 0; index < generatedItems.length; index += 1) {
   const validation = await callMcpTool.call(this, 'validate_component_markdown', {
     name: componentName,
     markdown,
+    tokens: sourceItem.sourceTokens,
+    sourceRef: sourceItem.sourceRef,
   });
 
   if (!validation?.valid) {
@@ -206,15 +171,13 @@ for (let index = 0; index < generatedItems.length; index += 1) {
 
 const missingComponents = expectedComponents.filter((name) => !validComponents.includes(name));
 
-if (!validComponents.length) {
-  throw new Error(`Aucun composant valide genere. Echecs: ${JSON.stringify(invalidComponents)}`);
-}
-
 if (invalidComponents.length || missingComponents.length) {
-  console.log(
-    `Composants non traites dans ce run: missing=${JSON.stringify(missingComponents)} invalid=${JSON.stringify(invalidComponents)}`
+  throw new Error(
+    `Validation bloquante: missing=${JSON.stringify(missingComponents)} invalid=${JSON.stringify(invalidComponents)}`,
   );
 }
+
+if (!validComponents.length) throw new Error('Aucun composant valide genere. Aucun push GitHub.');
 
 const branchName = `ai/tokens-update-${formatBranchTimestamp()}`;
 
@@ -232,6 +195,7 @@ return [
       repo: 'ds-documentation-caba',
       filePath: 'tokens-docs.json',
       baseBranch: 'main',
+      baseSha: sourceItems[0]?.json?.sourceRef || null,
       branchName,
       commitMessage: `docs(tokens): refresh ${validComponents.join(', ')}`,
     },

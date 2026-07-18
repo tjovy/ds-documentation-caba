@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { cssVarNameFromPath } from '../../../../scripts/lib/token-css-naming.js';
 
 const TOKEN_KEYS = new Set(['value', '$value']);
 
@@ -8,13 +9,6 @@ export function loadJson(filePath) {
 
 export function isTokenNode(node) {
   return !!node && typeof node === 'object' && [...TOKEN_KEYS].some((key) => key in node);
-}
-
-export function toKebabCase(value) {
-  return String(value)
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[_\s]+/g, '-')
-    .toLowerCase();
 }
 
 export function getNodeByPath(obj, tokenPath) {
@@ -69,11 +63,7 @@ export function resolveTokenValue(tokens, rawValue, seen = new Set()) {
 }
 
 export function buildCssVarName(pathSegments) {
-  const normalized = [...pathSegments];
-  if (['core', 'semantic', 'component', 'typography'].includes(normalized[0])) {
-    normalized.shift();
-  }
-  return `--${normalized.map(toKebabCase).join('-')}`;
+  return cssVarNameFromPath(pathSegments.join('.'));
 }
 
 export function flattenTokenTree(node, pathSegments = []) {

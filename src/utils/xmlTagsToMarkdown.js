@@ -11,7 +11,7 @@
 // =====================================================================
 
 // Extrait le contenu entre balises XML.
-// Gere les balises non fermees (Claude coupe par max_tokens).
+// Gere les balises non fermees quand un ancien modele coupe par max_tokens.
 function extractTag(text, tag) {
   // D'abord essayer avec balise fermante
   const closedRegex = new RegExp('<' + tag + '>([\\s\\S]*?)</' + tag + '>', 'i');
@@ -65,7 +65,7 @@ function buildLiveCode(css, reactCode) {
     .replace(/`/g, '\\`')
     .replace(/\$\{/g, '\\${');
 
-  // Si du code React est fourni par Claude, on le combine avec le CSS
+  // Si du code React legacy est fourni, on le combine avec le CSS
   if (reactCode) {
     const code = reactCode.trim();
 
@@ -259,7 +259,7 @@ export function xmlTagsToMarkdown(text) {
     sections.push('```');
     sections.push('');
   } else if (tokenMapping) {
-    // Fallback : on n'a que le token_mapping (Claude coupe par max_tokens)
+    // Fallback legacy : on n'a que le token_mapping
     // Generer une preview a partir des tokens mappes
     const fallbackCode = buildPreviewFromMapping(tokenMapping);
     if (fallbackCode) {

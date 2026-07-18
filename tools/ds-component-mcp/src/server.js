@@ -21,8 +21,10 @@ const figmaCachePath =
 
 const registry = loadRegistry(registryDir);
 
-function loadRuntimeState() {
-  const tokens = loadJson(tokensPath);
+function loadRuntimeState(tokensOverride = null) {
+  const tokens = tokensOverride && typeof tokensOverride === 'object'
+    ? tokensOverride
+    : loadJson(tokensPath);
   return {
     tokens,
     figmaCache: loadFigmaCache(figmaCachePath),
@@ -98,12 +100,14 @@ server.tool(
 
 server.tool(
   'get_component_generation_context',
-  'Return the full generation context that Claude must follow for one component.',
+  'Return the full generation context that the documentation generator must follow for one component.',
   {
     name: z.string().describe('Component name, for example button or input.'),
+    tokens: z.record(z.unknown()).optional().describe('Exact tokens.json snapshot read by the caller.'),
+    sourceRef: z.string().optional().describe('Git commit or ref associated with the token snapshot.'),
   },
-  async ({ name }) => {
-    const { tokens, figmaCache, knownCssVars } = loadRuntimeState();
+  async ({ name, tokens: tokensOverride, sourceRef }) => {
+    const { tokens, figmaCache, knownCssVars } = loadRuntimeState(tokensOverride);
     const context = buildGenerationContext(registry, tokens, name, figmaCache);
     if (!context) {
       const errorPayload = { error: `Unknown component: ${name}` };
@@ -121,7 +125,9 @@ server.tool(
     const payload = {
       ...context,
       repositoryContext: {
-        tokensPath,
+        tokenSource: tokensOverride ? 'caller-snapshot' : 'local-file',
+        tokensPath: tokensOverride ? null : tokensPath,
+        sourceRef: sourceRef || null,
         figmaCachePath,
         knownCssVarCount: knownCssVars.length,
       },
@@ -145,9 +151,11 @@ server.tool(
   {
     name: z.string().describe('Component name, for example button or input.'),
     markdown: z.string().describe('Generated Markdown returned by the model.'),
+    tokens: z.record(z.unknown()).optional().describe('Exact tokens.json snapshot used for generation.'),
+    sourceRef: z.string().optional().describe('Git commit or ref associated with the token snapshot.'),
   },
-  async ({ name, markdown }) => {
-    const { tokens, figmaCache } = loadRuntimeState();
+  async ({ name, markdown, tokens: tokensOverride }) => {
+    const { tokens, figmaCache } = loadRuntimeState(tokensOverride);
     const context = buildGenerationContext(registry, tokens, name, figmaCache);
     if (!context) {
       const errorPayload = { valid: false, name, error: `Unknown component: ${name}` };
