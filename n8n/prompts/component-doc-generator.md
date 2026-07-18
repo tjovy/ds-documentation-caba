@@ -12,7 +12,7 @@ Le bloc JSX est le code livre aux developpeurs. Il doit:
 - compiler sans import ni export;
 - commencer par `const css = \`...\`;`, puis contenir les helpers/composants et `const Demo = () => ...`;
 - se terminer exactement par `render(<Demo />);`;
-- utiliser uniquement les variables presentes dans `tokens` du contexte, sans fallback `var(--x, valeur)`;
+- utiliser uniquement les variables presentes dans `mcpContext.contract.allowedCssVars`, sans fallback `var(--x, valeur)`;
 - ne contenir aucune couleur litterale hex/rgb/hsl, URL, asset externe, acces reseau ou global navigateur;
 - utiliser la classe racine `component.rootClass` et des classes scopees derivees;
 - montrer toute la matrice d'axes declaree dans `component.axes` avec des arrays compacts et des `.map()`;

@@ -51,6 +51,7 @@
     "core.color.orange.400",
     "core.color.orange.700",
     "core.color.neutral.700",
+    "semantic.color.bg.elevated",
     "semantic.color.bg.surface",
     "semantic.color.bg.surfaceHover",
     "semantic.color.bg.brandSoft",
@@ -62,27 +63,12 @@
     "core.space.20",
     "core.radius.8",
     "core.radius.12",
-    "semantic.shadow.card",
-    "typography.heading.h2",
-    "typography.body.sm"
-  ],
-  "extraAllowedCssVars": [
-    "--component-card-width",
-    "--component-card-height-media-off",
-    "--component-card-height-media-on",
-    "--component-card-media-height",
-    "--component-card-media-radius",
-    "--component-card-padding",
-    "--component-card-gap",
-    "--component-card-radius",
-    "--component-card-bg-default",
-    "--component-card-bg-default-hover",
-    "--component-card-bg-highlight",
-    "--component-card-bg-highlight-hover",
-    "--component-card-border-default",
-    "--component-card-border-hover",
-    "--component-card-shadow-hover",
-    "--semantic-color-text-primary",
-    "--semantic-color-text-secondary"
+    "core.font.family.sans",
+    "core.font.weight.bold",
+    "core.font.weight.regular",
+    "typography.heading.h2.fontSize",
+    "typography.heading.h2.lineHeight",
+    "typography.body.sm.fontSize",
+    "typography.body.sm.lineHeight"
   ]
 }

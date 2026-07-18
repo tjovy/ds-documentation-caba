@@ -9,7 +9,7 @@ const RADIUS = [
     "value": "0px",
     "resolved": "0px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "2",
@@ -18,7 +18,7 @@ const RADIUS = [
     "value": "2px",
     "resolved": "2px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "4",
@@ -27,7 +27,7 @@ const RADIUS = [
     "value": "4px",
     "resolved": "4px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "6",
@@ -36,7 +36,7 @@ const RADIUS = [
     "value": "6px",
     "resolved": "6px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "8",
@@ -45,7 +45,7 @@ const RADIUS = [
     "value": "8px",
     "resolved": "8px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "12",
@@ -54,7 +54,7 @@ const RADIUS = [
     "value": "12px",
     "resolved": "12px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "16",
@@ -63,7 +63,7 @@ const RADIUS = [
     "value": "16px",
     "resolved": "16px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   },
   {
     "name": "full",
@@ -72,7 +72,7 @@ const RADIUS = [
     "value": "999px",
     "resolved": "999px",
     "description": "",
-    "type": "borderRadius"
+    "type": "dimension"
   }
 ];
 

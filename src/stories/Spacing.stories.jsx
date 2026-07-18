@@ -9,7 +9,7 @@ const SPACING = [
     "value": "0px",
     "resolved": "0px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "2%"
   },
   {
@@ -19,7 +19,7 @@ const SPACING = [
     "value": "1px",
     "resolved": "1px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "2%"
   },
   {
@@ -29,7 +29,7 @@ const SPACING = [
     "value": "2px",
     "resolved": "2px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "3.125%"
   },
   {
@@ -39,7 +39,7 @@ const SPACING = [
     "value": "4px",
     "resolved": "4px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "6.25%"
   },
   {
@@ -49,7 +49,7 @@ const SPACING = [
     "value": "6px",
     "resolved": "6px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "9.375%"
   },
   {
@@ -59,7 +59,7 @@ const SPACING = [
     "value": "8px",
     "resolved": "8px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "12.5%"
   },
   {
@@ -69,7 +69,7 @@ const SPACING = [
     "value": "10px",
     "resolved": "10px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "15.625%"
   },
   {
@@ -79,7 +79,7 @@ const SPACING = [
     "value": "12px",
     "resolved": "12px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "18.75%"
   },
   {
@@ -89,7 +89,7 @@ const SPACING = [
     "value": "16px",
     "resolved": "16px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "25%"
   },
   {
@@ -99,7 +99,7 @@ const SPACING = [
     "value": "20px",
     "resolved": "20px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "31.25%"
   },
   {
@@ -109,7 +109,7 @@ const SPACING = [
     "value": "24px",
     "resolved": "24px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "37.5%"
   },
   {
@@ -119,7 +119,7 @@ const SPACING = [
     "value": "32px",
     "resolved": "32px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "50%"
   },
   {
@@ -129,7 +129,7 @@ const SPACING = [
     "value": "40px",
     "resolved": "40px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "62.5%"
   },
   {
@@ -139,7 +139,7 @@ const SPACING = [
     "value": "48px",
     "resolved": "48px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "75%"
   },
   {
@@ -149,7 +149,7 @@ const SPACING = [
     "value": "64px",
     "resolved": "64px",
     "description": "",
-    "type": "spacing",
+    "type": "dimension",
     "width": "100%"
   }
 ];

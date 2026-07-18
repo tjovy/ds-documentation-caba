@@ -1,0 +1,13 @@
+{
+  "name": "Caba - Export tokens.json",
+  "id": "1512345678901234567",
+  "api": "1.0.0",
+  "editorType": ["figma"],
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["https://api.github.com"],
+    "reasoning": "Le plugin met à jour uniquement le fichier tokens.json du dépôt GitHub configuré."
+  }
+}

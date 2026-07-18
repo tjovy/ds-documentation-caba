@@ -8,7 +8,7 @@ const context = {
     name: 'button', htmlTag: 'button',
     variants: ['primary', 'secondary', 'ghost'], sizes: ['sm', 'md', 'lg'], states: ['default', 'hover', 'disabled'],
   },
-  contract: { allowedCssVars: ['--semantic-color-action-primary-bg-default'] },
+  contract: { allowedCssVars: ['--semantic-color-action-primary-default'] },
 };
 
 const validMarkdown = `## Description
@@ -23,7 +23,7 @@ Bouton Caba.
 
 ## Code interactif (Live Editor)
 \`\`\`jsx
-const css = \`.caba-button { background: var(--semantic-color-action-primary-bg-default); }\`;
+const css = \`.caba-button { background: var(--semantic-color-action-primary-default); }\`;
 const variants = ['primary', 'secondary', 'ghost'];
 const sizes = ['sm', 'md', 'lg'];
 const states = ['default', 'hover', 'disabled'];
@@ -38,7 +38,7 @@ test('accepts a compiled, exhaustive button snippet', () => {
 
 test('rejects CSS variable fallbacks and invented variables', () => {
   const invalid = validMarkdown.replace(
-    'var(--semantic-color-action-primary-bg-default)',
+    'var(--semantic-color-action-primary-default)',
     'var(--invented-color, #fff)',
   );
   const result = validateComponentMarkdown(invalid, context);
@@ -54,7 +54,7 @@ test('rejects invalid JSX syntax', () => {
 
 test('rejects dynamically constructed CSS variable names', () => {
   const invalid = validMarkdown.replace(
-    'var(--semantic-color-action-primary-bg-default)',
+    'var(--semantic-color-action-primary-default)',
     'var(--semantic-color-action-${variant}-bg-default)',
   );
   assert.equal(validateComponentMarkdown(invalid, context).checks.hasDynamicCssVar, true);
@@ -122,5 +122,62 @@ test('builds an auto-discovered menu context from component tokens', () => {
   assert.equal(generated.component.htmlTag, 'nav');
   assert.deepEqual(generated.component.axes, { state: ['default', 'hover'] });
   assert.equal(generated.figma.complete, true);
-  assert.deepEqual(generated.contract.allowedCssVars, ['--component-menu-bg-default']);
+  assert.ok(generated.contract.allowedCssVars.includes('--component-menu-bg-default'));
+});
+
+test('builds usable allowed vars for auto-discovered Figma metadata components', () => {
+  const tokens = {
+    core: {
+      space: {
+        16: { value: '16px', type: 'dimension' },
+      },
+      radius: {
+        8: { value: '8px', type: 'dimension' },
+      },
+      font: {
+        family: {
+          sans: { value: 'Inter', type: 'fontFamily' },
+        },
+      },
+    },
+    semantic: {
+      color: {
+        bg: {
+          surface: { value: '#191919', type: 'color' },
+        },
+        text: {
+          primary: { value: '#ffffff', type: 'color' },
+        },
+      },
+    },
+    component: {
+      spark: {
+        $figma: {
+          name: 'Icon/Spark',
+          type: 'COMPONENT',
+        },
+      },
+    },
+  };
+  const figmaCache = {
+    _meta: { cached_at: '2026-07-18T00:00:00.000Z', source: 'test' },
+    figma_design_specs: {
+      Spark: {
+        name: 'Icon/Spark',
+        type: 'COMPONENT',
+        width: '24px',
+        height: '24px',
+      },
+    },
+  };
+
+  const generated = buildGenerationContext({}, tokens, 'spark', figmaCache);
+  assert.equal(generated.component.autoDiscovered, true);
+  assert.deepEqual(generated.contract.allowedCssVars, [
+    '--core-font-family-sans',
+    '--core-radius-8',
+    '--core-space-16',
+    '--semantic-color-bg-surface',
+    '--semantic-color-text-primary',
+  ]);
 });

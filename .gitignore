@@ -6,3 +6,4 @@ storybook-static
 tokens.figma-export.json
 build/tokens.normalized.json
 n8n/backups/
+figma-token-exporter/dist/

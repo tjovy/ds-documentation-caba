@@ -30,6 +30,34 @@ const HTML_TAG_BY_COMPONENT_NAME = {
   tooltip: 'div',
 };
 
+const AUTO_DISCOVERED_TOKEN_PATHS = [
+  'semantic.color.bg.page',
+  'semantic.color.bg.surface',
+  'semantic.color.bg.surfaceHover',
+  'semantic.color.border.default',
+  'semantic.color.border.brand',
+  'semantic.color.focus.ring',
+  'semantic.color.icon.default',
+  'semantic.color.icon.muted',
+  'semantic.color.text.primary',
+  'semantic.color.text.secondary',
+  'semantic.color.text.brand',
+  'core.space.8',
+  'core.space.12',
+  'core.space.16',
+  'core.space.20',
+  'core.radius.4',
+  'core.radius.8',
+  'core.radius.12',
+  'core.font.family.sans',
+  'core.font.weight.regular',
+  'core.font.weight.medium',
+  'core.font.size.14',
+  'core.font.size.16',
+  'core.font.lineHeight.20',
+  'core.font.lineHeight.24',
+];
+
 function titleFromName(name) {
   return String(name || '')
     .split(/[-_\s/]+/)
@@ -95,7 +123,7 @@ function buildAutoDiscoveredDefinition(tokens, componentName) {
         'Aucun fallback de variable CSS.',
       ],
     },
-    requiredTokenPaths: [],
+    requiredTokenPaths: AUTO_DISCOVERED_TOKEN_PATHS,
   };
 }
 
@@ -170,8 +198,8 @@ function buildJsxBlueprint(definition) {
       strategy: 'compact-button-matrix',
       outline: [
         "Declarer VARIANTS, SIZES et STATES une seule fois depuis le contrat Caba.",
-        "Utiliser des helpers compacts du type colorVar(variant, part, state, fallback) et sizeVar(size, part, fallback) au lieu d'une grosse map verbeuse.",
-        "Construire la taille a la demande a partir des vars --button-size-*.",
+        "Utiliser des helpers compacts bases uniquement sur les CSS vars exactes de contract.allowedCssVars.",
+        "Construire les tailles depuis les variables core space, radius et typography disponibles.",
         "Implementer function Button({ variant, size, state, icon, children }).",
         "Implementer function Demo() qui rend une grille compacte: 3 variantes x 3 etats, chaque cellule montrant sm/md/lg verticalement.",
         "Terminer strictement par render(<Demo />);",

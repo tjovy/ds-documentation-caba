@@ -8,8 +8,6 @@ const TYPOGRAPHY = {
       "path": "heading.h1",
       "jsonPath": "typography.heading.h1",
       "props": {
-        "fontFamily": "Inter",
-        "fontWeight": 700,
         "fontSize": "32px",
         "lineHeight": "40px"
       },
@@ -20,8 +18,6 @@ const TYPOGRAPHY = {
       "path": "heading.h2",
       "jsonPath": "typography.heading.h2",
       "props": {
-        "fontFamily": "Inter",
-        "fontWeight": 700,
         "fontSize": "24px",
         "lineHeight": "32px"
       },
@@ -34,8 +30,6 @@ const TYPOGRAPHY = {
       "path": "body.md",
       "jsonPath": "typography.body.md",
       "props": {
-        "fontFamily": "Inter",
-        "fontWeight": 400,
         "fontSize": "16px",
         "lineHeight": "24px"
       },
@@ -46,8 +40,6 @@ const TYPOGRAPHY = {
       "path": "body.sm",
       "jsonPath": "typography.body.sm",
       "props": {
-        "fontFamily": "Inter",
-        "fontWeight": 400,
         "fontSize": "14px",
         "lineHeight": "20px"
       },
@@ -60,8 +52,6 @@ const TYPOGRAPHY = {
       "path": "label.button",
       "jsonPath": "typography.label.button",
       "props": {
-        "fontFamily": "Inter",
-        "fontWeight": 500,
         "fontSize": "14px",
         "lineHeight": "20px"
       },

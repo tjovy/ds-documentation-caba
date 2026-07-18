@@ -1,0 +1,15 @@
+{
+  "name": "caba-figma-token-exporter",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit && npm run build"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.117.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}

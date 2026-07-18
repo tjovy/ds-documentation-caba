@@ -14,32 +14,27 @@ Source Figma :
 - `tokens-docs.json` : seed minimal, à enrichir par n8n uniquement
 - `build/css/variables.css` : sortie CSS à utiliser par Storybook
 
-## Export simple depuis Tokens Studio
+## Export direct depuis Figma
 
-Tu ne dois pas verifier les sets a chaque changement de couleur.
-
-Configuration une seule fois dans Tokens Studio:
-
-- GitHub provider vers `tjovy/ds-documentation-caba`
-- branche `main`
-- chemin `tokens.json`
-- export en un seul fichier JSON
-
-Ensuite, le geste normal est simplement:
-
-1. modifier les variables/tokens dans Figma ou Tokens Studio
-2. cliquer `Push to GitHub`
-3. laisser GitHub generer `build/css/variables.css`
-
-Le repo normalise automatiquement les exports Tokens Studio verbeux comme `Primitive/Value`, `Semantic/Dark`, `Typography/Value`, `Space/Value`, `Radius/Value` et `component/component` vers la forme stable utilisee par Storybook: `core`, `semantic`, `typography`, `component`.
-
-Pour inspecter ce que le pipeline comprend, tu peux lancer:
+Le plugin local `figma-token-exporter` lit les variables natives et tous les composants du fichier. Après sa configuration initiale, un clic met à jour uniquement `tokens.json` sur GitHub. Il ne génère aucun fichier JSON intermédiaire.
 
 ```bash
-npm run normalize-tokens
+npm run figma-plugin:install
+npm run figma-plugin:build
 ```
 
-Cela genere `build/tokens.normalized.json` uniquement pour controle local.
+Importer ensuite `figma-token-exporter/manifest.json` depuis `Plugins > Development > Import plugin from manifest` dans Figma Desktop. Les instructions détaillées sont dans `figma-token-exporter/README.md`.
+
+## Export attendu
+
+Le fichier attendu par GitHub et n8n est un seul `tokens.json` au format stable:
+
+- `core`
+- `semantic`
+- `typography`
+- `component`
+
+Le plugin Figma produit directement cette forme. Aucune coche Tokens Studio ni fichier `normalized` ou `fallback` n'est necessaire dans le workflow courant.
 
 ## Raccordement workflow
 
@@ -68,10 +63,9 @@ Important : retire toute consigne workflow qui force `danger` pour Button ou des
 
 ## Vérification locale
 
-Le forfait Figma Pro ne donne pas acces au scope REST `file_variables:read`. Pour generer `tokens.json`, utilise l'export JSON de Tokens Studio. Le repo normalise automatiquement l'export avant generation CSS et validation.
+Le forfait Figma Pro ne donne pas acces au scope REST `file_variables:read`. Le plugin local contourne cette limite proprement en lisant les variables natives depuis le fichier ouvert, sans utiliser l'API REST payante.
 
 ```bash
-npm run normalize-tokens
 npm run refresh-figma-cache
 npm run workflow:preflight
 npm run build-storybook
