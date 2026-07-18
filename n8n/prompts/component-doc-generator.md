@@ -13,13 +13,15 @@ Interdictions absolues:
 - ne rien inventer: variante, taille, etat, sous-composant, prop, CSS var, placeholder marketing
 - ne jamais utiliser une CSS var absente de `allowedCssVars`
 - ne pas dire que Figma est indisponible si `figma.available === true`
-- ne pas ajouter de sections `HTML`, `CSS` ou `JS`
+- ne pas ajouter de sections markdown separees `## HTML`, `## CSS` ou `## JS`
 - ne pas produire de pseudo-balises de migration du type `<token_mapping>`, `<css>`, `<react>`
-- ne pas utiliser `<style>`, CSS externe, classes dependantes d'une feuille externe, ni handlers interactifs juste pour simuler hover/active/focus
+- ne pas utiliser de CSS externe, de classes dependantes d'une feuille externe, ni de handlers interactifs juste pour simuler hover/active/focus
+- ne pas ecrire manuellement de balise `<style>` dans le JSX: Storybook injecte automatiquement `const css`
 
 Ton objectif:
 - markdown valide et lisible tel quel dans Storybook
 - JSX `react-live` valide et autonome
+- code de dev complet pour chaque composant: HTML/JSX, CSS et JS, extrait par Storybook depuis le bloc live
 - rendu structurel fidele au contrat MCP
 - couleurs, espacements, rayons et typos tires uniquement des CSS vars autorisees
 
@@ -35,6 +37,7 @@ Regles de sortie:
 - `Do`: 2 ou 3 bullets courtes maximum
 - `Don't`: 2 ou 3 bullets courtes maximum
 - un seul bloc ```jsx
+- pas de blocs separes ```html, ```css ou ```js: Storybook decoupe automatiquement le bloc ```jsx en panneaux HTML/CSS/JS
 - pas de tableau markdown
 - pas de XML, HTML documentaire ou meta-commentaire
 
@@ -42,9 +45,19 @@ Regles Storybook:
 - le markdown doit etre autoportant: il doit rester comprehensible sans contexte externe
 - le bloc JSX doit etre complet, compilable et se terminer par `render(<Demo />);`
 - le bloc JSX ne doit dependre d'aucun import, fichier CSS, asset externe ou helper hors snippet
+- le bloc JSX doit contenir les 3 parties de code de dev dans cet ordre:
+  1. `const css = \`...\`;` avec le CSS du composant
+  2. les constantes, maps, helpers ou sous-composants JS necessaires
+  3. `const Demo = () => { return (...); };` avec le HTML/JSX rendu, puis `render(<Demo />);`
+- le CSS doit etre dans le template literal `const css`, jamais dans un fichier externe
+- le HTML doit etre le JSX retourne par `Demo`, pas un bloc markdown separe
+- le JS doit rester dans le meme bloc `jsx`, avant `Demo`
 - si une information n'est pas certaine, l'indiquer comme limite dans `## Spec` au lieu de l'inventer
 
 Regles JSX obligatoires:
+- inclure `const css = \`...\`;` meme si le CSS est court
+- utiliser des `className` stables et lisibles, scopes au composant, par exemple `.caba-button` ou `.caba-card`
+- ne pas redefinir les tokens dans `:root`
 - suivre `outputRequirements.jsxBlueprint` strictement quand il existe
 - le noeud racine rendu doit respecter `component.htmlTag` ou l'encapsuler explicitement si le blueprint le demande
 - pas de commentaires inutiles

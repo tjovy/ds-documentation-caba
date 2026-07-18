@@ -1,11 +1,12 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DB_PATH = '/Users/atypic/.n8n/database.sqlite';
 const WORKFLOW_ID = '5iHwlZOmTAxQDkec';
 const BACKUP_PATH = fileURLToPath(new URL('./backups/ds-documentation-caba.before-patch.json', import.meta.url));
+const PROMPT_PATH = fileURLToPath(new URL('./prompts/component-doc-generator.md', import.meta.url));
 
 function sqlite(args) {
   return execFileSync('sqlite3', [DB_PATH, ...args], {
@@ -82,32 +83,20 @@ filterNode.parameters.jsCode = replaceAll(filterNode.parameters.jsCode, [
 
 const claudeNode = nodes.find((node) => node.name.includes('Claude'));
 if (!claudeNode) throw new Error('Node Claude introuvable');
-
-const promptReplacements = [
-  ['tokens.sanitized.json', 'tokens.json'],
-  [
-    '- montrer `primary`, `secondary`, `ghost`, `danger`\n- montrer `sm`, `md`, `lg`\n- montrer `default`, `hover`, `active`, `focus`, `disabled`',
-    '- montrer uniquement les variantes Figma: `primary`, `secondary`, `ghost`\n- montrer `sm`, `md`, `lg`\n- montrer uniquement les etats tokens: `default`, `hover`, `disabled`\n- ne pas inventer `danger`, `active`, `focus` ou `pressed`',
-  ],
-  [
-    '- exactement deux cartes: `top` et `bottom`\n- respecter `400x540` pour la carte et `400x270` pour le media\n- respecter l\'ordre categorie/meta, titre, sous-titre, body, date, CTA',
-    '- montrer uniquement les variantes Figma: Tone `default/highlight`, Media `off/on`, State `default/hover`\n- respecter `320px` de largeur\n- media on: hauteur de carte `304px`, media `120px`\n- media off: hauteur de carte `168px`\n- respecter l\'ordre categorie/meta, titre, sous-titre, body, date, CTA',
-  ],
-];
+const promptTemplate = readFileSync(PROMPT_PATH, 'utf8').trimEnd();
+const systemPrompt = promptTemplate
+  .split('\n\nTu generes la documentation Markdown finale du composant pour Storybook.')[0]
+  .trimEnd();
 
 const messageValues = claudeNode.parameters?.messages?.values || [];
 for (const message of messageValues) {
   if (typeof message.content === 'string') {
-    message.content = replaceAll(message.content, promptReplacements);
+    message.content = `=${promptTemplate}\n`;
   }
 }
 
-if (typeof claudeNode.parameters?.options?.system === 'string') {
-  claudeNode.parameters.options.system = replaceAll(
-    claudeNode.parameters.options.system,
-    promptReplacements,
-  );
-}
+claudeNode.parameters.options ||= {};
+claudeNode.parameters.options.system = `${systemPrompt}\n`;
 
 const finalizeNode = requireNode(nodes, 'Finalize + Validate');
 finalizeNode.parameters.jsCode = replaceAll(finalizeNode.parameters.jsCode, [

@@ -10,7 +10,16 @@ import { CodePanesDisplay } from './CodePanes.jsx';
 const liveEditorScope = { React };
 
 const injectUnifiedPreviewFrame = (codeString) => {
-  return codeString;
+  const cssVarMatch = codeString.match(/const\s+(css|__css|__injectedCss)\s*=/);
+  if (!cssVarMatch || /<style>\{(?:css|__css|__injectedCss)\}<\/style>/.test(codeString)) {
+    return codeString;
+  }
+
+  const cssVarName = cssVarMatch[1];
+  return codeString.replace(
+    /render\(\s*<Demo\s*\/>\s*\);?/,
+    `render(<><style>{${cssVarName}}</style><Demo /></>);`
+  );
 };
 
 const GENERIC_LIVE_FALLBACK = `

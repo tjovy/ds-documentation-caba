@@ -67,8 +67,13 @@ export const reassembleCode = (panes) => {
     parts.push(panes.js.trim());
   }
   if (panes.html && panes.html.trim()) {
-    const styleTag = panes.css ? '\n  <style>{css}</style>' : '';
-    parts.push(`render(<>${styleTag}\n${panes.html.trim()}\n</>);`);
+    parts.push(`const Demo = () => {
+  return (
+${panes.html.trim()}
+  );
+};
+
+render(<Demo />);`);
   }
   return parts.join('\n\n');
 };
