@@ -41,22 +41,41 @@ Le script `scripts/sync-tokens-preview.js` suit maintenant exactement cette logi
 
 Tokens Studio est l'option canonique pour generer `tokens.json` avec ton forfait Figma actuel. On n'utilise pas le scope REST `file_variables:read`.
 
-Dans Figma:
+Le workflow ne doit pas t'obliger a verifier les sets a chaque changement. La configuration des sets est une operation initiale; ensuite tu modifies tes tokens et tu pousses vers GitHub.
+
+Dans Tokens Studio, configure une seule fois le provider GitHub:
+
+- owner: `tjovy`
+- repo: `ds-documentation-caba`
+- branch: `main`
+- file path: `tokens.json`
+- format: un seul fichier JSON
+
+Ensuite, au quotidien:
 
 1. Ouvrir le fichier du design system.
 2. Ouvrir Tokens Studio.
-3. Verifier que les sets exportes correspondent aux familles attendues: `core`, `semantic`, `component`, `typography`.
-4. Exporter les tokens au format JSON.
-5. Remplacer le fichier `tokens.json` du repo avec ce JSON.
-6. Lancer les validations:
+3. Modifier les tokens.
+4. Cliquer `Push to GitHub`.
+5. Laisser GitHub generer le CSS.
+
+Le repo accepte deux formes:
+
+- forme canonique: `core`, `semantic`, `typography`, `component`
+- forme Tokens Studio: `Primitive/Value`, `Semantic/Dark`, `Typography/Value`, `Space/Value`, `Radius/Value`, `component/component`
+
+Avant de generer le CSS, le pipeline normalise automatiquement ces sets vers la forme canonique. Cela evite d'avoir a nettoyer l'export a la main.
+
+Pour controler localement ce que le pipeline comprend:
 
 ```bash
+npm run normalize-tokens
 npm run build-css
 npm run validate-css-contract
 npm run refresh-figma-cache
 ```
 
-Le workflow attend ces groupes dans `tokens.json`:
+Le workflow exploite ces groupes apres normalisation:
 
 - `core`
 - `semantic`

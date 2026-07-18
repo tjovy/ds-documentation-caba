@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { cssVarNameFromPath, normalizeOutputPath } from './lib/token-css-naming.js';
+import { normalizeDesignTokens } from './lib/token-normalizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,7 +167,11 @@ function buildCss(tokens) {
   return `/* Generated from tokens.json. Do not edit manually. */\n:root {\n${declarations.join('\n')}\n}\n`;
 }
 
-const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+const rawTokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+const { tokens, warnings } = normalizeDesignTokens(rawTokens, { returnWarnings: true });
+for (const warning of warnings) {
+  console.warn(`Token normalization: ${warning}`);
+}
 const css = buildCss(tokens);
 
 for (const outputPath of outputPaths) {

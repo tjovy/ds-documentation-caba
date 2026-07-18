@@ -84,6 +84,7 @@ export function flattenTokenTree(node, pathSegments = []) {
   }
 
   for (const [key, value] of Object.entries(node)) {
+    if (key.startsWith('$')) continue;
     items.push(...flattenTokenTree(value, [...pathSegments, key]));
   }
 

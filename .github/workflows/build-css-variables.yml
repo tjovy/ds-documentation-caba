@@ -7,6 +7,7 @@ on:
     paths:
       - tokens.json
       - scripts/build-css-variables.js
+      - scripts/lib/token-normalizer.js
       - scripts/lib/token-css-naming.js
       - scripts/validate-css-contract.js
       - tools/ds-component-mcp/registry/**

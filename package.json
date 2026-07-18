@@ -11,6 +11,7 @@
     "export-figma-tokens": "node scripts/export-figma-variables.js",
     "export-figma-tokens:tokens": "node scripts/export-figma-variables.js --out tokens.json",
     "refresh-figma-cache": "node scripts/refresh-figma-design-cache.js",
+    "normalize-tokens": "node scripts/normalize-tokens.js",
     "build-css": "node scripts/build-css-variables.js",
     "validate-css-contract": "node scripts/validate-css-contract.js",
     "validate-docs": "node scripts/validate-token-docs.js",

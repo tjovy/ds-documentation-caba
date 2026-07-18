@@ -8,6 +8,7 @@ import { loadRegistry, listComponentSummaries, buildGenerationContext } from './
 import { loadJson, buildKnownCssVars } from './lib/tokens.js';
 import { validateComponentMarkdown } from './lib/markdown.js';
 import { loadFigmaCache } from './lib/figma.js';
+import { normalizeDesignTokens } from '../../../scripts/lib/token-normalizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,9 +23,10 @@ const figmaCachePath =
 const registry = loadRegistry(registryDir);
 
 function loadRuntimeState(tokensOverride = null) {
-  const tokens = tokensOverride && typeof tokensOverride === 'object'
+  const rawTokens = tokensOverride && typeof tokensOverride === 'object'
     ? tokensOverride
     : loadJson(tokensPath);
+  const tokens = normalizeDesignTokens(rawTokens);
   return {
     tokens,
     figmaCache: loadFigmaCache(figmaCachePath),

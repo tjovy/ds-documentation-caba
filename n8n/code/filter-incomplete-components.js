@@ -1,6 +1,93 @@
 const WORKFLOW_VERSION = 'ssot-v4';
 const MAX_COMPONENTS_PER_RUN = 5;
 const MCP_ENDPOINT = 'http://127.0.0.1:3101/mcp';
+const CANONICAL_TOKEN_KEYS = new Set(['core', 'semantic', 'typography', 'component']);
+
+function isObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isTokenNode(node) {
+  return isObject(node) && ('value' in node || '$value' in node);
+}
+
+function toCamelSegment(segment) {
+  return String(segment).replace(/-([a-z0-9])/gi, (_, char) => char.toUpperCase());
+}
+
+function normalizeTokenReference(value) {
+  if (typeof value !== 'string') return value;
+  const match = value.trim().match(/^\{(.+)\}$/);
+  if (!match) return value;
+  return `{${match[1].split('.').filter(Boolean).map(toCamelSegment).join('.')}}`;
+}
+
+function normalizeTokenTree(node) {
+  if (!isObject(node)) return node;
+  if (isTokenNode(node)) {
+    const output = { value: normalizeTokenReference(node.value ?? node.$value) };
+    if (node.type || node.$type) output.type = node.type ?? node.$type;
+    if (node.description || node.$description) output.description = node.description ?? node.$description;
+    return output;
+  }
+
+  const output = {};
+  for (const [rawKey, value] of Object.entries(node)) {
+    if (rawKey === '$extensions') continue;
+    const key = rawKey.startsWith('$') ? rawKey : toCamelSegment(rawKey);
+    output[key] = normalizeTokenTree(value);
+  }
+  return output;
+}
+
+function mergeTokenTree(target, source) {
+  if (!isObject(source)) return target;
+  for (const [key, value] of Object.entries(source)) {
+    if (isObject(value) && isObject(target[key]) && !isTokenNode(value) && !isTokenNode(target[key])) {
+      mergeTokenTree(target[key], value);
+    } else {
+      target[key] = value;
+    }
+  }
+  return target;
+}
+
+function readTokenSet(rawTokens, setPath) {
+  if (!isObject(rawTokens)) return null;
+  if (rawTokens[setPath]) return rawTokens[setPath];
+  return setPath.split('/').filter(Boolean).reduce((current, segment) => {
+    if (!isObject(current) || !current[segment]) return null;
+    return current[segment];
+  }, rawTokens);
+}
+
+function normalizeDesignTokens(rawTokens) {
+  const normalized = {};
+  if (rawTokens?.$metadata) normalized.$metadata = rawTokens.$metadata;
+
+  for (const key of CANONICAL_TOKEN_KEYS) {
+    if (isObject(rawTokens?.[key])) normalized[key] = normalizeTokenTree(rawTokens[key]);
+  }
+
+  const primitive = readTokenSet(rawTokens, 'Primitive/Value') || readTokenSet(rawTokens, 'primitive/value');
+  const space = readTokenSet(rawTokens, 'Space/Value') || readTokenSet(rawTokens, 'space/value');
+  const radius = readTokenSet(rawTokens, 'Radius/Value') || readTokenSet(rawTokens, 'radius/value');
+  const typography = readTokenSet(rawTokens, 'Typography/Value') || readTokenSet(rawTokens, 'typography/value');
+  const semantic = readTokenSet(rawTokens, 'Semantic/Dark') || readTokenSet(rawTokens, 'semantic/dark');
+  const component = readTokenSet(rawTokens, 'Component/Value') ||
+    readTokenSet(rawTokens, 'component/value') ||
+    readTokenSet(rawTokens, 'component/component');
+
+  if (primitive) mergeTokenTree(normalized.core ||= {}, normalizeTokenTree(primitive));
+  if (space?.space) mergeTokenTree(normalized.core ||= {}, { space: normalizeTokenTree(space.space) });
+  if (radius?.radius) mergeTokenTree(normalized.core ||= {}, { radius: normalizeTokenTree(radius.radius) });
+  if (typography?.font) mergeTokenTree(normalized.core ||= {}, { font: normalizeTokenTree(typography.font) });
+  if (typography?.typography) normalized.typography = normalizeTokenTree(typography.typography);
+  if (semantic) normalized.semantic = normalizeTokenTree(semantic);
+  if (component) normalized.component = normalizeTokenTree(component);
+
+  return normalized;
+}
 
 function stableStringify(value) {
   if (Array.isArray(value)) {
@@ -150,7 +237,8 @@ function shouldSkipForFigma(componentName, context) {
 
 try {
   const bufferTokens = await this.helpers.getBinaryDataBuffer(0, 'data', 'Get tokens.json');
-  const tokens = JSON.parse(bufferTokens.toString('utf8'));
+  const rawTokens = JSON.parse(bufferTokens.toString('utf8'));
+  const tokens = normalizeDesignTokens(rawTokens);
   const sourceRef = $('Get source main ref').first()?.json?.object?.sha || 'main';
 
   let docs = {};
