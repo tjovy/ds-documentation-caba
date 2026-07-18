@@ -1,0 +1,356 @@
+{
+  "component": {
+    "button": {
+      "$figma": {
+        "componentSetId": {
+          "$type": "other",
+          "$value": "5:116"
+        },
+        "page": {
+          "$type": "other",
+          "$value": "Components"
+        },
+        "variantCount": {
+          "$type": "other",
+          "$value": 27
+        },
+        "axes": {
+          "Size": {
+            "0": {
+              "$type": "other",
+              "$value": "Small"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "Medium"
+            },
+            "2": {
+              "$type": "other",
+              "$value": "Large"
+            }
+          },
+          "Style": {
+            "0": {
+              "$type": "other",
+              "$value": "Primary"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "Secondary"
+            },
+            "2": {
+              "$type": "other",
+              "$value": "Ghost"
+            }
+          },
+          "State": {
+            "0": {
+              "$type": "other",
+              "$value": "Default"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "Hover"
+            },
+            "2": {
+              "$type": "other",
+              "$value": "Disabled"
+            }
+          }
+        },
+        "properties": {
+          "0": {
+            "$type": "other",
+            "$value": "Label"
+          },
+          "1": {
+            "$type": "other",
+            "$value": "Show Icon"
+          }
+        }
+      },
+      "size": {
+        "sm": {
+          "paddingX": {
+            "$type": "spacing",
+            "$value": "{core.space.12}"
+          },
+          "paddingY": {
+            "$type": "spacing",
+            "$value": "{core.space.8}"
+          },
+          "gap": {
+            "$type": "spacing",
+            "$value": "{core.space.8}"
+          },
+          "minWidth": {
+            "$type": "sizing",
+            "$value": "88px"
+          },
+          "minHeight": {
+            "$type": "sizing",
+            "$value": "36px"
+          },
+          "fontSize": {
+            "$type": "fontSizes",
+            "$value": "{core.font.size.14}"
+          },
+          "lineHeight": {
+            "$type": "lineHeights",
+            "$value": "{core.font.lineHeight.20}"
+          }
+        },
+        "md": {
+          "paddingX": {
+            "$type": "spacing",
+            "$value": "{core.space.16}"
+          },
+          "paddingY": {
+            "$type": "spacing",
+            "$value": "{core.space.12}"
+          },
+          "gap": {
+            "$type": "spacing",
+            "$value": "{core.space.8}"
+          },
+          "minWidth": {
+            "$type": "sizing",
+            "$value": "108px"
+          },
+          "minHeight": {
+            "$type": "sizing",
+            "$value": "44px"
+          },
+          "fontSize": {
+            "$type": "fontSizes",
+            "$value": "{core.font.size.14}"
+          },
+          "lineHeight": {
+            "$type": "lineHeights",
+            "$value": "{core.font.lineHeight.20}"
+          }
+        },
+        "lg": {
+          "paddingX": {
+            "$type": "spacing",
+            "$value": "{core.space.20}"
+          },
+          "paddingY": {
+            "$type": "spacing",
+            "$value": "{core.space.16}"
+          },
+          "gap": {
+            "$type": "spacing",
+            "$value": "{core.space.12}"
+          },
+          "minWidth": {
+            "$type": "sizing",
+            "$value": "128px"
+          },
+          "minHeight": {
+            "$type": "sizing",
+            "$value": "52px"
+          },
+          "fontSize": {
+            "$type": "fontSizes",
+            "$value": "{core.font.size.16}"
+          },
+          "lineHeight": {
+            "$type": "lineHeights",
+            "$value": "{core.font.lineHeight.24}"
+          }
+        }
+      },
+      "radius": {
+        "$type": "borderRadius",
+        "$value": "{core.radius.8}"
+      },
+      "fontFamily": {
+        "$type": "fontFamilies",
+        "$value": "{core.font.family.sans}"
+      },
+      "fontWeight": {
+        "$type": "fontWeights",
+        "$value": "{core.font.weight.medium}"
+      },
+      "iconSize": {
+        "$type": "sizing",
+        "$value": "16px"
+      },
+      "variants": {
+        "primary": {
+          "$type": "composition",
+          "$value": "{semantic.color.action.primary}"
+        },
+        "secondary": {
+          "$type": "composition",
+          "$value": "{semantic.color.action.secondary}"
+        },
+        "ghost": {
+          "$type": "composition",
+          "$value": "{semantic.color.action.ghost}"
+        }
+      }
+    },
+    "card": {
+      "$figma": {
+        "componentSetId": {
+          "$type": "other",
+          "$value": "8:45"
+        },
+        "page": {
+          "$type": "other",
+          "$value": "Components"
+        },
+        "variantCount": {
+          "$type": "other",
+          "$value": 8
+        },
+        "axes": {
+          "Tone": {
+            "0": {
+              "$type": "other",
+              "$value": "Default"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "Highlight"
+            }
+          },
+          "Media": {
+            "0": {
+              "$type": "other",
+              "$value": "Off"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "On"
+            }
+          },
+          "State": {
+            "0": {
+              "$type": "other",
+              "$value": "Default"
+            },
+            "1": {
+              "$type": "other",
+              "$value": "Hover"
+            }
+          }
+        },
+        "properties": {
+          "0": {
+            "$type": "other",
+            "$value": "Title"
+          },
+          "1": {
+            "$type": "other",
+            "$value": "Description"
+          }
+        }
+      },
+      "width": {
+        "$type": "sizing",
+        "$value": "320px"
+      },
+      "height": {
+        "mediaOff": {
+          "$type": "sizing",
+          "$value": "168px"
+        },
+        "mediaOn": {
+          "$type": "sizing",
+          "$value": "304px"
+        }
+      },
+      "media": {
+        "height": {
+          "$type": "sizing",
+          "$value": "120px"
+        },
+        "radius": {
+          "$type": "borderRadius",
+          "$value": "{core.radius.8}"
+        }
+      },
+      "padding": {
+        "$type": "spacing",
+        "$value": "{core.space.20}"
+      },
+      "gap": {
+        "$type": "spacing",
+        "$value": "{core.space.16}"
+      },
+      "radius": {
+        "$type": "borderRadius",
+        "$value": "{core.radius.12}"
+      },
+      "bg": {
+        "default": {
+          "$type": "color",
+          "$value": "{semantic.color.bg.surface}"
+        },
+        "defaultHover": {
+          "$type": "color",
+          "$value": "{semantic.color.bg.surfaceHover}"
+        },
+        "highlight": {
+          "$type": "color",
+          "$value": "{semantic.color.bg.brandSoft}"
+        },
+        "highlightHover": {
+          "$type": "color",
+          "$value": "{semantic.color.bg.brand}"
+        }
+      },
+      "border": {
+        "default": {
+          "$type": "color",
+          "$value": "{semantic.color.border.default}"
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{semantic.color.border.brand}"
+        }
+      },
+      "shadow": {
+        "hover": {
+          "$type": "boxShadow",
+          "$value": "{semantic.shadow.card}"
+        }
+      },
+      "title": {
+        "font": {
+          "$type": "typography",
+          "$value": "{typography.heading.h2}"
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{semantic.color.text.primary}"
+        }
+      },
+      "description": {
+        "font": {
+          "$type": "typography",
+          "$value": "{typography.body.sm}"
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{semantic.color.text.secondary}"
+        }
+      }
+    }
+  },
+  "semantic": {
+    "shadow": {
+      "card": {
+        "$type": "boxShadow",
+        "$value": "0 12px 28px -12px rgba(0, 0, 0, 0.35)"
+      },
+      "focus": {
+        "$type": "boxShadow",
+        "$value": "0 0 0 3px rgba(255, 155, 40, 0.32)"
+      }
+    }
+  }
+}

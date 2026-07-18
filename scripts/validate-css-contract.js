@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadTokenFallbacks } from './lib/load-token-fallbacks.js';
 import { normalizeDesignTokens } from './lib/token-normalizer.js';
 import { loadRegistry, buildGenerationContext } from '../tools/ds-component-mcp/src/lib/registry.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const tokens = normalizeDesignTokens(JSON.parse(fs.readFileSync(path.join(root, 'tokens.json'), 'utf8')));
+const tokens = normalizeDesignTokens(JSON.parse(fs.readFileSync(path.join(root, 'tokens.json'), 'utf8')), {
+  fallbackTokens: loadTokenFallbacks(root),
+});
 const css = fs.readFileSync(path.join(root, 'build/css/variables.css'), 'utf8');
 const registry = loadRegistry(path.join(root, 'tools/ds-component-mcp/registry'));
 const generatedVars = new Set([...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)].map((match) => match[1]));

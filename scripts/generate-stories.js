@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { normalizeDesignTokens } from './lib/token-normalizer.js';
+import { loadTokenFallbacks } from './lib/load-token-fallbacks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,7 +10,9 @@ const rootDir = path.join(__dirname, '..');
 const tokenPath = path.join(rootDir, 'tokens.json');
 const storiesDir = path.join(rootDir, 'src', 'stories');
 
-const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+const tokens = normalizeDesignTokens(JSON.parse(fs.readFileSync(tokenPath, 'utf8')), {
+  fallbackTokens: loadTokenFallbacks(rootDir),
+});
 
 const ignoredKeys = new Set(['light', 'dark', 'theme', '$themes', '$metadata', 'tokenSetOrder']);
 
