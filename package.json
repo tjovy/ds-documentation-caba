@@ -27,7 +27,8 @@
     "build-docs-preview": "npm run build-docs",
     "storybook": "npm run build-css && npm run build-docs && storybook dev -p 6006",
     "storybook-preview": "npm run build-css && npm run build-docs && storybook dev -p 6006",
-    "build-storybook": "npm run build-css && npm run build-docs && storybook build"
+    "build-storybook": "npm run build-css && npm run build-docs && storybook build",
+    "figma-plugin:path": "echo figma-projects/ds-variables-export-plugin/manifest.json"
   },
   "dependencies": {
     "react": "^19.2.0",

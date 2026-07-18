@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        color: var(--figma-color-text);
+        background: var(--figma-color-bg);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        line-height: 24px;
+      }
+
+      p {
+        margin: 0 0 16px;
+        color: var(--figma-color-text-secondary);
+        font-size: 12px;
+        line-height: 18px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      button {
+        height: 32px;
+        border: 1px solid var(--figma-color-border);
+        border-radius: 6px;
+        padding: 0 12px;
+        color: var(--figma-color-text);
+        background: var(--figma-color-bg-secondary);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button.primary {
+        color: var(--figma-color-text-onbrand);
+        background: var(--figma-color-bg-brand);
+        border-color: var(--figma-color-bg-brand);
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+
+      textarea {
+        box-sizing: border-box;
+        width: 100%;
+        height: 310px;
+        resize: none;
+        border: 1px solid var(--figma-color-border);
+        border-radius: 6px;
+        padding: 12px;
+        color: var(--figma-color-text);
+        background: var(--figma-color-bg-secondary);
+        font: 11px/16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      .status {
+        min-height: 18px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--figma-color-text-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DS Variables Export</h1>
+    <p>Exporte les variables locales Figma vers le format tokens.json du Storybook Caba, sans API REST ni scope file_variables:read.</p>
+
+    <div class="actions">
+      <button class="primary" id="export">Exporter</button>
+      <button id="copy" disabled>Copier JSON</button>
+      <button id="download" disabled>Telecharger tokens.json</button>
+    </div>
+
+    <textarea id="output" spellcheck="false" placeholder="Le JSON exporte apparaitra ici."></textarea>
+    <div class="status" id="status"></div>
+
+    <script>
+      const exportButton = document.getElementById('export');
+      const copyButton = document.getElementById('copy');
+      const downloadButton = document.getElementById('download');
+      const output = document.getElementById('output');
+      const status = document.getElementById('status');
+      let currentJson = '';
+
+      function setBusy(isBusy) {
+        exportButton.disabled = isBusy;
+        copyButton.disabled = isBusy || !currentJson;
+        downloadButton.disabled = isBusy || !currentJson;
+      }
+
+      exportButton.onclick = () => {
+        status.textContent = 'Export en cours...';
+        currentJson = '';
+        output.value = '';
+        setBusy(true);
+        parent.postMessage({ pluginMessage: { type: 'export' } }, '*');
+      };
+
+      copyButton.onclick = async () => {
+        await navigator.clipboard.writeText(currentJson);
+        status.textContent = 'JSON copie dans le presse-papiers.';
+      };
+
+      downloadButton.onclick = () => {
+        const blob = new Blob([currentJson], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'tokens.json';
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+
+      window.onmessage = (event) => {
+        const message = event.data.pluginMessage;
+        if (!message) return;
+
+        if (message.type === 'export-result') {
+          currentJson = `${JSON.stringify(message.tokens, null, 2)}\n`;
+          output.value = currentJson;
+          status.textContent = `${message.variableCount} variables exportees depuis ${message.collectionCount} collections.`;
+          setBusy(false);
+        }
+
+        if (message.type === 'export-error') {
+          status.textContent = `Export impossible: ${message.message}`;
+          setBusy(false);
+        }
+      };
+    </script>
+  </body>
+</html>

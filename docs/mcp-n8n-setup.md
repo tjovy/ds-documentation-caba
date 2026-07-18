@@ -41,6 +41,8 @@ Le script `scripts/sync-tokens-preview.js` suit maintenant exactement cette logi
 
 On peut exporter les variables natives Figma directement en JSON, sans passer par Tokens Studio.
 
+Pour ton forfait Figma Pro actuel, le scope REST `file_variables:read` n'est pas disponible. L'option canonique pour ce projet est donc le plugin local.
+
 ### Option A: plugin Figma local, sans token REST
 
 C'est l'option recommandee si le scope Figma REST `file_variables:read` n'est pas disponible dans ton compte.
@@ -51,6 +53,14 @@ C'est l'option recommandee si le scope Figma REST `file_variables:read` n'est pa
 4. Lancer `DS Variables Export` dans le fichier du design system.
 5. Cliquer `Exporter`.
 6. Cliquer `Telecharger tokens.json` ou `Copier JSON`.
+7. Remplacer le `tokens.json` du repo avec ce JSON.
+8. Lancer les validations:
+
+```bash
+npm run build-css
+npm run validate-css-contract
+npm run refresh-figma-cache
+```
 
 Le plugin exporte les collections canoniques:
 
@@ -63,7 +73,7 @@ Il ignore les collections dupliquees comme `primitive/core`, `semantic/Light`, `
 
 ### Option B: API REST Figma, avec token
 
-Cette option necessite un compte Figma compatible avec la Variables REST API et le scope `file_variables:read`.
+Cette option est conservee uniquement si un futur compte Figma donne acces a la Variables REST API et au scope `file_variables:read`.
 
 Prerequis:
 
@@ -107,7 +117,7 @@ Convention minimale:
 
 - creer un component set ou composant local Figma nomme comme le composant, par exemple `Accordion`, `Badge`, `Input`, etc.
 - creer les variables Figma sous `component/<nom>/...`, par exemple `component/accordion/...`
-- exporter les variables avec `npm run export-figma-tokens:tokens`
+- exporter les variables avec le plugin local `DS Variables Export`
 - rafraichir le cache design avec `npm run refresh-figma-cache`
 - pousser `tokens.json` et le cache Figma si tu veux figer ce contexte dans le repo
 
