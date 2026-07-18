@@ -37,7 +37,7 @@ Le workflow calcule les hashes sur tous les composants detectes sous `tokens.jso
 
 Pour Button et Card, le MCP ajoute des tokens references sous `core`, `semantic`, `typography`.
 
-Pour un composant auto-detecte comme `menu`, le hash part de `component.menu` et des chemins references par le MCP s'il y en a.
+Pour un composant auto-detecte, le hash part de `component.<nom>`, du blueprint Figma stable et des chemins references par le MCP s'il y en a.
 
 Le champ `$metadata.figmaFileKey` permet de relier les artefacts au fichier Figma source.
 

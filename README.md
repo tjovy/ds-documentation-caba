@@ -32,8 +32,10 @@ Button et Card ont des contrats MCP specifiques :
 
 Les nouveaux composants peuvent etre auto-detectes si deux conditions sont reunies :
 
-- Figma contient un component set ou composant local nomme comme le composant, par exemple `Menu`
-- `tokens.json` contient une entree `component.menu`
+- Figma contient un component set ou composant local nomme comme le composant
+- `tokens.json` contient une entree `component.<nom>`
+
+Les composants modifies sont aussi detectes: le workflow compare les tokens et le blueprint Figma stable, puis regenere uniquement les entrees obsoletes dans `tokens-docs.json`.
 
 Important : retire toute consigne workflow qui force `danger` pour Button ou des dimensions `400x540` pour Card, car elles ne viennent pas de ce fichier Figma.
 

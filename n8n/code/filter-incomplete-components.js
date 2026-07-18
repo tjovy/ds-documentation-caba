@@ -108,6 +108,30 @@ function referencedTokenPathsFromContext(context) {
     .filter(Boolean);
 }
 
+function figmaSnapshotFromContext(context) {
+  if (!context?.figma?.available) {
+    return null;
+  }
+
+  return {
+    matchedKey: context.figma.matchedKey || null,
+    complete: context.figma.complete === true,
+    expectedVariantCount: context.figma.expectedVariantCount ?? null,
+    actualVariantCount: context.figma.actualVariantCount ?? null,
+    blueprint: context.figma.blueprint || null,
+    component: {
+      htmlTag: context.component?.htmlTag || null,
+      rootClass: context.component?.rootClass || null,
+      autoDiscovered: context.component?.autoDiscovered === true,
+      axes: context.component?.axes || {},
+      variants: context.component?.variants || [],
+      sizes: context.component?.sizes || [],
+      states: context.component?.states || [],
+      renderRequirements: context.component?.renderRequirements || null,
+    },
+  };
+}
+
 function shouldSkipForFigma(componentName, context) {
   if (!context?.component?.requiresFigma) {
     return null;
@@ -165,10 +189,12 @@ try {
 
     const componentTokenHash = simpleHash(componentSnapshot);
     const referencedTokenHash = simpleHash(referencedSnapshot);
+    const figmaHash = simpleHash(figmaSnapshotFromContext(context));
     const currentSourceHash = simpleHash({
       workflowVersion: WORKFLOW_VERSION,
       componentTokenHash,
       referencedTokenHash,
+      figmaHash,
     });
 
     const reasons = [];
@@ -177,6 +203,7 @@ try {
     if ((existingMeta.workflowVersion || '') !== WORKFLOW_VERSION) reasons.push('workflow_version_changed');
     if (existingMeta.componentTokenHash && existingMeta.componentTokenHash !== componentTokenHash) reasons.push('component_tokens_changed');
     if (referencedTokenPaths.length > 0 && existingMeta.referencedTokenHash && existingMeta.referencedTokenHash !== referencedTokenHash) reasons.push('referenced_tokens_changed');
+    if (existingMeta.figmaHash && existingMeta.figmaHash !== figmaHash) reasons.push('figma_blueprint_changed');
     if (existingMeta.sourceHash && existingMeta.sourceHash !== currentSourceHash) reasons.push('source_hash_changed');
 
     if (reasons.length > 0) {
@@ -195,8 +222,10 @@ try {
             componentTokenHash,
             referencedTokenPaths,
             referencedTokenHash,
+            figmaHash,
             currentSourceHash,
             previousSourceHash: existingMeta.sourceHash || null,
+            previousFigmaHash: existingMeta.figmaHash || null,
           },
         },
       });

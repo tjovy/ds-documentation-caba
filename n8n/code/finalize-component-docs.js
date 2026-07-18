@@ -121,6 +121,7 @@ for (let index = 0; index < generatedItems.length; index += 1) {
   const referencedTokenPaths = comparison.referencedTokenPaths || [];
   const componentTokenHash = comparison.componentTokenHash;
   const referencedTokenHash = comparison.referencedTokenHash;
+  const figmaHash = comparison.figmaHash;
   const sourceHash = comparison.currentSourceHash;
 
   if (!componentName || !markdown) {
@@ -159,6 +160,7 @@ for (let index = 0; index < generatedItems.length; index += 1) {
     sourceHash,
     componentTokenHash,
     referencedTokenHash,
+    figmaHash,
     referencedTokenPaths,
     figmaMatchedKey: context.figma?.matchedKey || null,
     figmaCachedAt: context.figma?.cachedAt || null,

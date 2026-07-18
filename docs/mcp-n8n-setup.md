@@ -105,17 +105,19 @@ Le workflow peut documenter un nouveau composant sans fichier de registre manuel
 
 Convention minimale:
 
-- creer un component set ou composant local Figma nomme `Menu`
-- creer les variables Figma sous `component/menu/...`
+- creer un component set ou composant local Figma nomme comme le composant, par exemple `Accordion`, `Badge`, `Input`, etc.
+- creer les variables Figma sous `component/<nom>/...`, par exemple `component/accordion/...`
 - exporter les variables avec `npm run export-figma-tokens:tokens`
 - rafraichir le cache design avec `npm run refresh-figma-cache`
 - pousser `tokens.json` et le cache Figma si tu veux figer ce contexte dans le repo
 
 Le cache Caba utilise par defaut le fichier `rcJLbt1R5iE7MNW9JhcHzH`. Pour le remplacer explicitement, utilise `CABA_FIGMA_FILE_KEY`; cela evite qu'une variable globale `FIGMA_FILE_KEY` d'un autre projet change ce cache par accident.
 
-Le MCP construit alors automatiquement un contrat generique pour `component.menu`.
+Le MCP construit alors automatiquement un contrat generique pour tout composant `component.<nom>` present dans `tokens.json`.
 
-Button et Card gardent leurs contrats specialises. Les nouveaux composants utilisent un contrat auto-detecte: le HTML racine est infere par nom quand c'est evident (`menu` -> `<nav>`, `badge` -> `<span>`, `card` -> `<article>`), les axes viennent du nommage des variantes Figma (`State=Default`, `Type=Primary`, etc.), et les CSS vars autorisees viennent de `component.<nom>`.
+Button et Card gardent leurs contrats specialises. Les autres composants utilisent un contrat auto-detecte: le HTML racine est infere par nom quand c'est evident (`badge` -> `<span>`, `accordion` -> `<section>`, `input` -> `<input>`), les axes viennent du nommage des variantes Figma (`State=Default`, `Type=Primary`, etc.), et les CSS vars autorisees viennent de `component.<nom>`.
+
+Le workflow detecte aussi les modifications: le hash de derive inclut les tokens du composant, les tokens references et le blueprint Figma stable. Un simple refresh du cache sans changement visuel ne relance pas OpenAI; une modification des variantes, axes, dimensions, auto-layout ou styles Figma relance uniquement les composants concernes.
 
 Si le cache Figma ne contient pas le composant correspondant, le workflow bloque avant OpenAI. C'est volontaire: cela evite de generer une documentation hallucinee.
 
