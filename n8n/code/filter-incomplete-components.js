@@ -90,20 +90,15 @@ async function callMcpTool(name, args) {
   return payload.result?.structuredContent || null;
 }
 
-async function resolveReferencedTokenPaths(componentName, existingMeta, tokens, sourceRef) {
-  const metaPaths = Array.isArray(existingMeta?.referencedTokenPaths)
-    ? existingMeta.referencedTokenPaths.filter(Boolean)
-    : [];
-
-  if (metaPaths.length > 0) {
-    return metaPaths;
-  }
-
-  const context = await callMcpTool.call(this, 'get_component_generation_context', {
+async function resolveComponentContext(componentName, tokens, sourceRef) {
+  return callMcpTool.call(this, 'get_component_generation_context', {
     name: componentName,
     tokens,
     sourceRef,
   });
+}
+
+function referencedTokenPathsFromContext(context) {
   const referencedTokens = Array.isArray(context?.contract?.referencedTokens)
     ? context.contract.referencedTokens
     : [];
@@ -111,6 +106,22 @@ async function resolveReferencedTokenPaths(componentName, existingMeta, tokens, 
   return referencedTokens
     .map((item) => item?.tokenPath)
     .filter(Boolean);
+}
+
+function shouldSkipForFigma(componentName, context) {
+  if (!context?.component?.requiresFigma) {
+    return null;
+  }
+
+  if (!context.figma?.available) {
+    return `Figma indisponible pour ${componentName}`;
+  }
+
+  if (!context.figma?.complete) {
+    return `Cache Figma incomplet pour ${componentName}: ${context.figma?.actualVariantCount || 0}/${context.figma?.expectedVariantCount || '?'}`;
+  }
+
+  return null;
 }
 
 try {
@@ -127,19 +138,24 @@ try {
   }
 
   const items = [];
+  const blockedComponents = [];
   const components = tokens.component || {};
 
   for (const componentName of Object.keys(components).sort()) {
     const existingEntry = docs.component?.[componentName] || {};
     const existingMarkdown = existingEntry.description || '';
     const existingMeta = existingEntry._meta || {};
-    const referencedTokenPaths = await resolveReferencedTokenPaths.call(
-      this,
-      componentName,
-      existingMeta,
-      tokens,
-      sourceRef,
-    );
+    const context = await resolveComponentContext.call(this, componentName, tokens, sourceRef);
+    const figmaSkipReason = shouldSkipForFigma(componentName, context);
+    if (figmaSkipReason) {
+      blockedComponents.push({ componentName, reason: figmaSkipReason });
+      console.warn(figmaSkipReason);
+      continue;
+    }
+    const metaPaths = Array.isArray(existingMeta?.referencedTokenPaths)
+      ? existingMeta.referencedTokenPaths.filter(Boolean)
+      : [];
+    const referencedTokenPaths = metaPaths.length > 0 ? metaPaths : referencedTokenPathsFromContext(context);
 
     const componentSnapshot = components[componentName] || {};
     const referencedSnapshot = referencedTokenPaths.map((tokenPath) => ({
@@ -188,7 +204,10 @@ try {
   }
 
   if (!items.length) {
-    console.log('Aucune difference detectee entre tokens.json et tokens-docs.json. Aucun appel OpenAI.');
+    const blockedMessage = blockedComponents.length
+      ? ` Composants bloques sans appel OpenAI: ${JSON.stringify(blockedComponents)}`
+      : '';
+    console.log(`Aucune difference exploitable entre tokens.json et tokens-docs.json. Aucun appel OpenAI.${blockedMessage}`);
     return [];
   }
 

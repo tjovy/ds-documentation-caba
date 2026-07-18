@@ -42,9 +42,9 @@ server.tool(
   'List all documentable design-system components.',
   {},
   async () => {
-    const { figmaCache } = loadRuntimeState();
+    const { tokens, figmaCache } = loadRuntimeState();
     const payload = {
-      components: listComponentSummaries(registry),
+      components: listComponentSummaries(registry, tokens),
       figma: {
         cachePath: figmaCachePath,
         cachedAt: figmaCache?._meta?.cached_at || null,

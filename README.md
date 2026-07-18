@@ -6,7 +6,7 @@ Source Figma :
 
 - File key : `rcJLbt1R5iE7MNW9JhcHzH`
 - Page composants : `Components`
-- Component sets : `Button` (`5:116`) et `Card` (`8:45`)
+- Component sets : decouverts automatiquement depuis Figma quand ils correspondent a `tokens.json > component.*`
 
 ## Fichiers à pousser dans le nouveau repo
 
@@ -21,20 +21,26 @@ Le workflow n8n `ds-documentation-caba` applique ce principe :
 1. GitHub lit `tokens.json` sur `main`
 2. GitHub lit `tokens-docs.json`
 3. n8n détecte les composants incomplets sous `component`
-4. MCP/Figma fournit le contexte Button/Card
+4. MCP/Figma fournit le contexte du composant
 5. OpenAI génère uniquement le Markdown et le JSX de `tokens-docs.json`
 6. n8n pousse seulement `tokens-docs.json` dans une branche review
 
-Pour Caba, les variantes autorisées sont :
+Button et Card ont des contrats MCP specifiques :
 
 - Button : `primary`, `secondary`, `ghost` ; tailles `sm`, `md`, `lg` ; états `default`, `hover`, `disabled`
 - Card : tons `default`, `highlight` ; média `off`, `on` ; états `default`, `hover`
+
+Les nouveaux composants peuvent etre auto-detectes si deux conditions sont reunies :
+
+- Figma contient un component set ou composant local nomme comme le composant, par exemple `Menu`
+- `tokens.json` contient une entree `component.menu`
 
 Important : retire toute consigne workflow qui force `danger` pour Button ou des dimensions `400x540` pour Card, car elles ne viennent pas de ce fichier Figma.
 
 ## Vérification locale
 
 ```bash
+npm run refresh-figma-cache
 npm run workflow:preflight
 npm run build-storybook
 ```

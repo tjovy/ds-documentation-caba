@@ -10,7 +10,9 @@ Dans les nodes GitHub du workflow, pointer vers le nouveau repo Storybook/tokens
 
 ## Prompt OpenAI
 
-Remplacer les contraintes spéciales existantes par :
+Les contraintes Button/Card restent speciales, mais les autres composants peuvent etre auto-detectes depuis `tokens.json > component.*` et le cache Figma.
+
+Contraintes specifiques a conserver :
 
 ```text
 Consignes speciales `button`:
@@ -31,11 +33,11 @@ Consignes speciales `card`:
 
 ## Drift detection
 
-Le workflow peut continuer à calculer les hashes sur :
+Le workflow calcule les hashes sur tous les composants detectes sous `tokens.json > component.*`.
 
-- `component.button`
-- `component.card`
-- les tokens référencés sous `core`, `semantic`, `typography`
+Pour Button et Card, le MCP ajoute des tokens references sous `core`, `semantic`, `typography`.
+
+Pour un composant auto-detecte comme `menu`, le hash part de `component.menu` et des chemins references par le MCP s'il y en a.
 
 Le champ `$metadata.figmaFileKey` permet de relier les artefacts au fichier Figma source.
 

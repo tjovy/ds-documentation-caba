@@ -81,9 +81,17 @@ function validateAxes(code, component) {
   const checks = {};
   const axes = component.name === 'card'
     ? { tones: component.variants || [], media: ['off', 'on'], states: component.states || [] }
-    : { variants: component.variants || [], sizes: component.sizes || [], states: component.states || [] };
+    : component.autoDiscovered
+      ? Object.fromEntries(
+        Object.entries(component.axes || {}).map(([axis, values]) => [
+          axis.endsWith('s') ? axis : `${axis}s`,
+          values,
+        ])
+      )
+      : { variants: component.variants || [], sizes: component.sizes || [], states: component.states || [] };
 
   for (const [arrayName, expected] of Object.entries(axes)) {
+    if (!expected?.length) continue;
     const propName = arrayName === 'tones' ? 'tone' : arrayName.replace(/s$/, '');
     const actual = [
       ...extractStringArrayValues(code, arrayName),
@@ -115,6 +123,7 @@ export function validateComponentMarkdown(markdown, context) {
   const hasCssTemplate = /\bconst\s+css\s*=\s*`[\s\S]*?`;/.test(code);
   const endsWithRender = /render\(\s*<Demo\s*\/>\s*\);\s*$/.test(code);
   const rootTagOk = new RegExp(`<${context.component.htmlTag}\\b`, 'i').test(code);
+  const rootClassOk = !context.component.rootClass || new RegExp(`\\b${context.component.rootClass}\\b`, 'i').test(code);
   const hasNativeDisabled = context.component.name !== 'button' || /<button\b[\s\S]*?\bdisabled(?:\s|=|\})/i.test(code);
   const hasCssVarFallback = /var\(\s*--[a-z0-9-]+\s*,/i.test(code);
   const hasDynamicCssVar = /var\([^)]*\$\{|--[a-z0-9-]*\$\{/i.test(code);
@@ -137,6 +146,7 @@ export function validateComponentMarkdown(markdown, context) {
     && hasCssTemplate
     && endsWithRender
     && rootTagOk
+    && rootClassOk
     && hasNativeDisabled
     && unknownCssVars.length === 0
     && invalidAxes.length === 0
@@ -154,6 +164,7 @@ export function validateComponentMarkdown(markdown, context) {
       hasCssTemplate,
       endsWithRender,
       rootTagOk,
+      rootClassOk,
       hasNativeDisabled,
       axes,
       invalidAxes,

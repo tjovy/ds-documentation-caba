@@ -52,14 +52,33 @@ function compactBlueprint(ctx) {
     }
     return { shell: blueprint.shell, sizes: blueprint.sizes, styles };
   }
+  if (ctx.component?.name === 'card') {
+    return {
+      shell: blueprint.shell,
+      variants: (blueprint.variants || []).map((item) => ({
+        tone: item.tone, media: item.media, state: item.state, width: item.width, height: item.height,
+        cornerRadius: item.cornerRadius, background: item.background, shadow: item.shadow,
+        mediaSpec: item.mediaSpec ? { width: item.mediaSpec.width, height: item.mediaSpec.height, cornerRadii: item.mediaSpec.cornerRadii } : null,
+        content: item.content,
+      })),
+    };
+  }
   return {
     shell: blueprint.shell,
-    variants: (blueprint.variants || []).map((item) => ({
-      tone: item.tone, media: item.media, state: item.state, width: item.width, height: item.height,
-      cornerRadius: item.cornerRadius, background: item.background, shadow: item.shadow,
-      mediaSpec: item.media ? { width: item.media.width, height: item.media.height, cornerRadii: item.media.cornerRadii } : null,
-      content: item.content,
+    axes: blueprint.axes || {},
+    variants: (blueprint.variants || []).slice(0, 12).map((item) => ({
+      name: item.name,
+      axes: item.axes || {},
+      width: item.width,
+      height: item.height,
+      cornerRadius: item.cornerRadius,
+      fills: item.fills,
+      strokes: item.strokes,
+      effects: item.effects,
+      autoLayout: item.autoLayout,
+      textNodes: item.textNodes,
     })),
+    textNodes: blueprint.textNodes,
   };
 }
 
@@ -70,7 +89,9 @@ function compactContext(ctx = {}) {
   }
   return {
     component: {
-      name: ctx.component?.name, htmlTag: ctx.component?.htmlTag,
+      name: ctx.component?.name, htmlTag: ctx.component?.htmlTag, rootClass: ctx.component?.rootClass,
+      autoDiscovered: ctx.component?.autoDiscovered === true,
+      axes: ctx.component?.axes || {},
       variants: ctx.component?.variants || [], sizes: ctx.component?.sizes || [], states: ctx.component?.states || [],
       previewMatrix: ctx.component?.previewMatrix, renderRequirements: ctx.component?.renderRequirements,
       usageRules: ctx.component?.usageRules, accessibility: ctx.component?.accessibility,

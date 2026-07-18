@@ -14,9 +14,9 @@ Le bloc JSX est le code livre aux developpeurs. Il doit:
 - se terminer exactement par `render(<Demo />);`;
 - utiliser uniquement les variables presentes dans `tokens` du contexte, sans fallback `var(--x, valeur)`;
 - ne contenir aucune couleur litterale hex/rgb/hsl, URL, asset externe, acces reseau ou global navigateur;
-- utiliser des classes scopees `.caba-button` ou `.caba-card`;
-- montrer toute la matrice d'axes declaree avec des arrays compacts et des `.map()`;
+- utiliser la classe racine `component.rootClass` et des classes scopees derivees;
+- montrer toute la matrice d'axes declaree dans `component.axes` avec des arrays compacts et des `.map()`;
 - conserver un vrai `<button disabled={...}>` pour Button et un vrai `<article>` pour Card;
 - contenir HTML/JSX, CSS et logique JS utilisables directement, sans blocs de code separes.
 
-Button: uniquement primary/secondary/ghost, sm/md/lg, default/hover/disabled. Card: uniquement tone default/highlight, media off/on, state default/hover. Une incertitude doit etre signalee dans Spec, jamais comblee par invention.
+Button: uniquement primary/secondary/ghost, sm/md/lg, default/hover/disabled. Card: uniquement tone default/highlight, media off/on, state default/hover. Pour un composant auto-detecte, reprendre seulement `component.axes`, `figma.blueprint` et les CSS vars fournies; si une info manque, le dire dans Spec au lieu d'inventer.

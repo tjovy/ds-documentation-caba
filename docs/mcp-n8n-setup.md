@@ -99,6 +99,26 @@ Le script lit les collections Figma et les convertit vers la structure attendue 
 
 Les alias Figma sont conserves sous forme de references entre accolades, par exemple `{color.primary.600}`.
 
+## Ajout automatique de composants
+
+Le workflow peut documenter un nouveau composant sans fichier de registre manuel si le composant existe a la fois dans Figma et dans `tokens.json`.
+
+Convention minimale:
+
+- creer un component set ou composant local Figma nomme `Menu`
+- creer les variables Figma sous `component/menu/...`
+- exporter les variables avec `npm run export-figma-tokens:tokens`
+- rafraichir le cache design avec `npm run refresh-figma-cache`
+- pousser `tokens.json` et le cache Figma si tu veux figer ce contexte dans le repo
+
+Le cache Caba utilise par defaut le fichier `rcJLbt1R5iE7MNW9JhcHzH`. Pour le remplacer explicitement, utilise `CABA_FIGMA_FILE_KEY`; cela evite qu'une variable globale `FIGMA_FILE_KEY` d'un autre projet change ce cache par accident.
+
+Le MCP construit alors automatiquement un contrat generique pour `component.menu`.
+
+Button et Card gardent leurs contrats specialises. Les nouveaux composants utilisent un contrat auto-detecte: le HTML racine est infere par nom quand c'est evident (`menu` -> `<nav>`, `badge` -> `<span>`, `card` -> `<article>`), les axes viennent du nommage des variantes Figma (`State=Default`, `Type=Primary`, etc.), et les CSS vars autorisees viennent de `component.<nom>`.
+
+Si le cache Figma ne contient pas le composant correspondant, le workflow bloque avant OpenAI. C'est volontaire: cela evite de generer une documentation hallucinee.
+
 ## n8n
 
 Les fichiers canoniques du workflow sont:

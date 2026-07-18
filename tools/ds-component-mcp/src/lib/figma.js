@@ -6,6 +6,14 @@ function normalizeName(value) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
+function normalizeAxisName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function loadFigmaCache(cachePath) {
   if (!cachePath || !fs.existsSync(cachePath)) {
     return null;
@@ -224,7 +232,7 @@ function extractCardBlueprint(spec, relatedSpecs = []) {
       cornerRadius: child.cornerRadius || null,
       background: child.fills?.[0]?.color || null,
       shadow: child.effects?.[0]?.css || null,
-      media: mediaNode
+      mediaSpec: mediaNode
         ? {
             width: mediaNode.width || null,
             height: mediaNode.height || null,
@@ -259,6 +267,81 @@ function extractCardBlueprint(spec, relatedSpecs = []) {
   };
 }
 
+function parseVariantProperties(name) {
+  const source = String(name || '').trim();
+  if (!source.includes('=')) {
+    return null;
+  }
+
+  const properties = {};
+  for (const part of source.split(',')) {
+    const [rawKey, ...rawValue] = part.split('=');
+    const key = normalizeAxisName(rawKey);
+    const value = normalizeAxisName(rawValue.join('='));
+    if (key && value) {
+      properties[key] = value;
+    }
+  }
+
+  return Object.keys(properties).length ? properties : null;
+}
+
+function collectGenericAxes(variants) {
+  const axes = {};
+  for (const variant of variants) {
+    for (const [axis, value] of Object.entries(variant.axes || {})) {
+      axes[axis] ||= new Set();
+      axes[axis].add(value);
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(axes).map(([axis, values]) => [axis, [...values].sort()])
+  );
+}
+
+function extractGenericBlueprint(spec) {
+  if (!spec || typeof spec !== 'object') {
+    return null;
+  }
+
+  const textNodes = extractTextNodes(spec).slice(0, 12);
+  const variants = (spec.children || [])
+    .map((child) => {
+      const axes = parseVariantProperties(child?.name);
+      return {
+        name: child?.name || null,
+        axes: axes || {},
+        width: child?.width || null,
+        height: child?.height || null,
+        cornerRadius: child?.cornerRadius || null,
+        fills: child?.fills || [],
+        strokes: child?.strokes || [],
+        effects: child?.effects || [],
+        autoLayout: child?.autoLayout || null,
+        textNodes: extractTextNodes(child).slice(0, 8),
+      };
+    })
+    .filter((entry) => entry.name);
+
+  return {
+    shell: {
+      name: spec.name || null,
+      width: spec.width || null,
+      height: spec.height || null,
+      radius: spec.cornerRadius || null,
+      autoLayout: spec.autoLayout || null,
+      fills: spec.fills || [],
+      strokes: spec.strokes || [],
+      effects: spec.effects || [],
+    },
+    axes: collectGenericAxes(variants),
+    variants: variants.slice(0, 24),
+    textNodes,
+    variantCount: variants.length,
+  };
+}
+
 export function extractDesignBlueprint(matchedKey, spec, relatedSpecs = []) {
   if (!matchedKey || !spec) {
     return null;
@@ -272,7 +355,7 @@ export function extractDesignBlueprint(matchedKey, spec, relatedSpecs = []) {
     return extractCardBlueprint(spec, relatedSpecs);
   }
 
-  return null;
+  return extractGenericBlueprint(spec);
 }
 
 export function summarizeDesignSpec(spec, depth = 0, maxDepth = 4) {

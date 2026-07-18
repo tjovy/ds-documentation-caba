@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateComponentMarkdown } from '../src/lib/markdown.js';
+import { buildGenerationContext } from '../src/lib/registry.js';
 
 const context = {
   component: {
@@ -57,4 +58,69 @@ test('rejects dynamically constructed CSS variable names', () => {
     'var(--semantic-color-action-${variant}-bg-default)',
   );
   assert.equal(validateComponentMarkdown(invalid, context).checks.hasDynamicCssVar, true);
+});
+
+test('accepts an auto-discovered generic menu snippet', () => {
+  const menuContext = {
+    component: {
+      name: 'menu',
+      htmlTag: 'nav',
+      rootClass: 'caba-menu',
+      autoDiscovered: true,
+      axes: { state: ['default', 'hover'] },
+    },
+    contract: { allowedCssVars: ['--component-menu-bg-default'] },
+  };
+  const markdown = `## Description
+Menu Caba.
+
+## Spec
+- Conforme au blueprint.
+
+## Do & Don't
+- Do: utiliser les etats declares.
+- Don't: inventer une couleur.
+
+## Code interactif (Live Editor)
+\`\`\`jsx
+const css = \`.caba-menu { background: var(--component-menu-bg-default); }\`;
+const states = ['default', 'hover'];
+function Menu({ state }) { return <nav className="caba-menu" data-state={state}>Menu</nav>; }
+const Demo = () => <div>{states.map((state) => <Menu key={state} state={state} />)}</div>;
+render(<Demo />);
+\`\`\``;
+
+  assert.equal(validateComponentMarkdown(markdown, menuContext).valid, true);
+});
+
+test('builds an auto-discovered menu context from component tokens', () => {
+  const tokens = {
+    component: {
+      menu: {
+        bg: {
+          default: { value: '#111111', type: 'color' },
+        },
+      },
+    },
+  };
+  const figmaCache = {
+    _meta: { cached_at: '2026-07-18T00:00:00.000Z', source: 'test' },
+    figma_design_specs: {
+      Menu: {
+        name: 'Menu',
+        type: 'COMPONENT_SET',
+        children: [
+          { name: 'State=Default', type: 'COMPONENT', width: '160px', height: '40px' },
+          { name: 'State=Hover', type: 'COMPONENT', width: '160px', height: '40px' },
+        ],
+      },
+    },
+  };
+
+  const generated = buildGenerationContext({}, tokens, 'menu', figmaCache);
+  assert.equal(generated.component.autoDiscovered, true);
+  assert.equal(generated.component.htmlTag, 'nav');
+  assert.deepEqual(generated.component.axes, { state: ['default', 'hover'] });
+  assert.equal(generated.figma.complete, true);
+  assert.deepEqual(generated.contract.allowedCssVars, ['--component-menu-bg-default']);
 });

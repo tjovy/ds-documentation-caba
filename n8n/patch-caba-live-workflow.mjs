@@ -23,6 +23,12 @@ function requireNode(nodes, name) {
   return node;
 }
 
+function requireAnyNode(nodes, names) {
+  const node = nodes.find((item) => names.includes(item.name));
+  if (!node) throw new Error(`Node introuvable: ${names.join(' ou ')}`);
+  return node;
+}
+
 function apiHeaders(node) {
   node.parameters.sendHeaders = true;
   node.parameters.headerParameters = {
@@ -56,7 +62,7 @@ requireNode(nodes, 'Get component generation context').parameters.jsCode = readF
 requireNode(nodes, 'Finalize + Validate').parameters.jsCode = readFileSync(here('./code/finalize-component-docs.js'), 'utf8');
 requireNode(nodes, 'OpenAI GPT-5.6 Sol — Generate Markdown').parameters.jsCode = generatorCode;
 
-const sourceRef = requireNode(nodes, 'Get main ref');
+const sourceRef = requireAnyNode(nodes, ['Get source main ref', 'Get main ref']);
 sourceRef.name = 'Get source main ref';
 sourceRef.position = [-320, 48];
 sourceRef.parameters.url = 'https://api.github.com/repos/tjovy/ds-documentation-caba/git/ref/heads/main';
