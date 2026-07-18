@@ -37,24 +37,18 @@ Pour review une branche IA:
 
 Le script `scripts/sync-tokens-preview.js` suit maintenant exactement cette logique.
 
-## Export Figma sans Tokens Studio
+## Export Figma avec Tokens Studio
 
-On peut exporter les variables natives Figma directement en JSON, sans passer par Tokens Studio.
+Tokens Studio est l'option canonique pour generer `tokens.json` avec ton forfait Figma actuel. On n'utilise pas le scope REST `file_variables:read`.
 
-Pour ton forfait Figma Pro actuel, le scope REST `file_variables:read` n'est pas disponible. L'option canonique pour ce projet est donc le plugin local.
+Dans Figma:
 
-### Option A: plugin Figma local, sans token REST
-
-C'est l'option recommandee si le scope Figma REST `file_variables:read` n'est pas disponible dans ton compte.
-
-1. Ouvrir Figma Desktop.
-2. Aller dans `Plugins > Development > Import plugin from manifest...`.
-3. Selectionner `figma-projects/ds-variables-export-plugin/manifest.json`.
-4. Lancer `DS Variables Export` dans le fichier du design system.
-5. Cliquer `Exporter`.
-6. Cliquer `Telecharger tokens.json` ou `Copier JSON`.
-7. Remplacer le `tokens.json` du repo avec ce JSON.
-8. Lancer les validations:
+1. Ouvrir le fichier du design system.
+2. Ouvrir Tokens Studio.
+3. Verifier que les sets exportes correspondent aux familles attendues: `core`, `semantic`, `component`, `typography`.
+4. Exporter les tokens au format JSON.
+5. Remplacer le fichier `tokens.json` du repo avec ce JSON.
+6. Lancer les validations:
 
 ```bash
 npm run build-css
@@ -62,16 +56,16 @@ npm run validate-css-contract
 npm run refresh-figma-cache
 ```
 
-Le plugin exporte les collections canoniques:
+Le workflow attend ces groupes dans `tokens.json`:
 
-- `primitive`, convertie en `core`
+- `core`
 - `semantic`
 - `component`
 - `typography`
 
-Il ignore les collections dupliquees comme `primitive/core`, `semantic/Light`, `semantic/Dark` ou `component/component`.
+Le groupe `component` est celui qui declenche la documentation automatique. Par exemple `component.button`, `component.card`, `component.accordion`, etc.
 
-### Option B: API REST Figma, avec token
+### Option REST Figma
 
 Cette option est conservee uniquement si un futur compte Figma donne acces a la Variables REST API et au scope `file_variables:read`.
 
@@ -117,7 +111,7 @@ Convention minimale:
 
 - creer un component set ou composant local Figma nomme comme le composant, par exemple `Accordion`, `Badge`, `Input`, etc.
 - creer les variables Figma sous `component/<nom>/...`, par exemple `component/accordion/...`
-- exporter les variables avec le plugin local `DS Variables Export`
+- exporter les variables avec Tokens Studio au format JSON
 - rafraichir le cache design avec `npm run refresh-figma-cache`
 - pousser `tokens.json` et le cache Figma si tu veux figer ce contexte dans le repo
 

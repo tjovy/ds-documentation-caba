@@ -41,13 +41,7 @@ Important : retire toute consigne workflow qui force `danger` pour Button ou des
 
 ## Vérification locale
 
-Le forfait Figma Pro ne donne pas acces au scope REST `file_variables:read`. Pour generer `tokens.json`, utilise le plugin local:
-
-```bash
-npm run figma-plugin:path
-```
-
-Puis importe le manifest affiche dans Figma Desktop via `Plugins > Development > Import plugin from manifest...`.
+Le forfait Figma Pro ne donne pas acces au scope REST `file_variables:read`. Pour generer `tokens.json`, utilise l'export JSON de Tokens Studio.
 
 ```bash
 npm run refresh-figma-cache
