@@ -7,7 +7,7 @@
   "ui": "dist/ui.html",
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["https://api.github.com"],
+    "allowedDomains": ["https://api.github.com/"],
     "reasoning": "Le plugin met à jour uniquement le fichier tokens.json du dépôt GitHub configuré."
   }
 }
