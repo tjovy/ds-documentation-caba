@@ -16,6 +16,13 @@ on:
       - tools/ds-component-mcp/src/lib/tokens.js
       - .github/workflows/build-css-variables.yml
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - figma_tokens_exported
+
+concurrency:
+  group: build-css-${{ github.ref || github.event.client_payload.branch || 'main' }}
+  cancel-in-progress: true
 
 permissions:
   contents: write

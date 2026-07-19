@@ -31,11 +31,6 @@ type ExportResult = {
   componentCount: number;
 };
 
-type GitHubFile = {
-  sha?: string;
-  content?: string;
-};
-
 const SETTINGS_KEY = 'caba-github-settings-v1';
 const TOKENS_PATH = 'tokens.json';
 const DEFAULT_COMMIT_MESSAGE = 'chore(tokens): export depuis Figma';
@@ -581,22 +576,75 @@ function comparableTokens(content: string): string {
 async function githubRequest(url: string, token: string, init: RequestInit = {}): Promise<Response> {
   return fetch(url, {
     ...init,
+    cache: 'no-store',
     headers: {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${token}`,
       'X-GitHub-Api-Version': '2022-11-28',
+      'Cache-Control': 'no-cache',
       ...(init.headers || {}),
     },
   });
 }
 
-async function readGitHubFile(baseUrl: string, branch: string, token: string): Promise<GitHubFile | null> {
-  const currentResponse = await githubRequest(`${baseUrl}?ref=${encodeURIComponent(branch)}`, token);
-  if (currentResponse.ok) return currentResponse.json() as Promise<GitHubFile>;
-  if (currentResponse.status === 404) return null;
+function cacheBustedUrl(url: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}_=${Date.now()}`;
+}
 
-  const details = await currentResponse.text();
-  throw new Error(`Lecture GitHub impossible (${currentResponse.status}) : ${details.slice(0, 240)}`);
+async function readCurrentGithubFile(baseUrl: string, settings: StoredSettings): Promise<{ sha?: string; content?: string }> {
+  const token = settings.token;
+  if (!token) throw new Error('Token GitHub manquant.');
+  const refUrl = `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/git/ref/heads/${encodeURIComponent(settings.branch)}`;
+  const refResponse = await githubRequest(cacheBustedUrl(refUrl), token);
+  if (!refResponse.ok) {
+    const details = await refResponse.text();
+    throw new Error(`Lecture de la branche GitHub impossible (${refResponse.status}) : ${details.slice(0, 240)}`);
+  }
+
+  const ref = await refResponse.json() as { object?: { sha?: string } };
+  const commitSha = ref.object?.sha;
+  if (!commitSha) throw new Error('SHA de branche GitHub introuvable.');
+
+  const currentResponse = await githubRequest(
+    cacheBustedUrl(`${baseUrl}?ref=${encodeURIComponent(commitSha)}`),
+    token,
+  );
+  if (currentResponse.status === 404) return {};
+  if (!currentResponse.ok) {
+    const details = await currentResponse.text();
+    throw new Error(`Lecture GitHub impossible (${currentResponse.status}) : ${details.slice(0, 240)}`);
+  }
+  return currentResponse.json() as Promise<{ sha?: string; content?: string }>;
+}
+
+function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function dispatchCssBuild(settings: StoredSettings): Promise<void> {
+  const token = settings.token;
+  if (!token) throw new Error('Token GitHub manquant.');
+
+  const url = `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/dispatches`;
+  const response = await githubRequest(url, token, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_type: 'figma_tokens_exported',
+      client_payload: {
+        branch: settings.branch,
+        path: TOKENS_PATH,
+      },
+    }),
+  });
+
+  if (response.ok) return;
+
+  const details = await response.text();
+  throw new Error(
+    `tokens.json a bien été envoyé, mais le déclenchement CSS a échoué (${response.status}) : ${details.slice(0, 240)}`,
+  );
 }
 
 async function pushToGitHub(
@@ -604,15 +652,20 @@ async function pushToGitHub(
   result: ExportResult,
   commitMessage: string,
 ): Promise<'pushed' | 'unchanged'> {
-  if (!settings.token) throw new Error('Ajoute le token GitHub dans les réglages lors de la première utilisation.');
+  const token = settings.token;
+  if (!token) throw new Error('Ajoute le token GitHub dans les réglages lors de la première utilisation.');
 
   const baseUrl = `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/${TOKENS_PATH}`;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const current = await readGitHubFile(baseUrl, settings.branch, settings.token);
+  const desiredContent = comparableTokens(result.content);
 
-    if (current?.content) {
+  // A GitHub Action or another open Figma plugin can update tokens.json between
+  // the GET and PUT requests. Retry with the newest file SHA instead of making
+  // the designer resolve this normal optimistic-locking conflict manually.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const current = await readCurrentGithubFile(baseUrl, settings);
+    if (current.content) {
       const previousContent = decodeBase64(current.content);
-      if (comparableTokens(previousContent) === comparableTokens(result.content)) return 'unchanged';
+      if (comparableTokens(previousContent) === desiredContent) return 'unchanged';
     }
 
     const body: Record<string, unknown> = {
@@ -620,17 +673,26 @@ async function pushToGitHub(
       content: encodeBase64(result.content),
       branch: settings.branch,
     };
-    if (current?.sha) body.sha = current.sha;
+    if (current.sha) body.sha = current.sha;
 
-    const updateResponse = await githubRequest(baseUrl, settings.token, {
+    const updateResponse = await githubRequest(baseUrl, token, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (updateResponse.ok) return 'pushed';
+    if (updateResponse.ok) {
+      send('working', { label: 'Déclenchement de la génération CSS GitHub…' });
+      await dispatchCssBuild(settings);
+      return 'pushed';
+    }
+
+    if (updateResponse.status === 409 && attempt < 2) {
+      send('working', { label: 'Mise à jour GitHub détectée, nouvelle tentative…' });
+      await wait(250 * (attempt + 1));
+      continue;
+    }
 
     const details = await updateResponse.text();
-    if (updateResponse.status === 409 && attempt < 2) continue;
     throw new Error(`Push GitHub impossible (${updateResponse.status}) : ${details.slice(0, 240)}`);
   }
 
@@ -641,6 +703,25 @@ function send(type: string, payload: Record<string, unknown> = {}): void {
   figma.ui.postMessage({ type, ...payload });
 }
 
+function formatPluginError(error: unknown): string {
+  const nestedMessage = isObject(error)
+    ? error.message
+    : error instanceof Error
+      ? (error as unknown as { message?: unknown }).message
+      : undefined;
+  if (typeof nestedMessage === 'string' && nestedMessage) return nestedMessage;
+
+  try {
+    if (nestedMessage !== undefined) return JSON.stringify(nestedMessage);
+    const serialized = JSON.stringify(error);
+    if (serialized && serialized !== '{}') return serialized;
+  } catch {
+    // Fall through to a generic message when a platform object is not serializable.
+  }
+
+  return String(error);
+}
+
 async function initialize(): Promise<void> {
   const settings = await loadSettings();
   send('init', {
@@ -649,6 +730,8 @@ async function initialize(): Promise<void> {
     fileName: figma.root.name,
   });
 }
+
+let pushInProgress = false;
 
 figma.ui.onmessage = async (message: {
   type?: string;
@@ -671,17 +754,26 @@ figma.ui.onmessage = async (message: {
     }
 
     if (message.type === 'push') {
+      if (pushInProgress) {
+        send('error', { message: 'Un push est déjà en cours. Attends sa fin avant de recommencer.' });
+        return;
+      }
+      pushInProgress = true;
+      try {
       send('working', { label: 'Génération de tokens.json…' });
       const settings = await saveSettings(message.config || DEFAULT_CONFIG, message.token);
       const result = await buildTokens();
       send('working', { label: 'Envoi de tokens.json vers GitHub…' });
       const status = await pushToGitHub(settings, result, message.commitMessage || DEFAULT_COMMIT_MESSAGE);
       send('push-complete', { ...result, status });
+      } finally {
+        pushInProgress = false;
+      }
       return;
-    }
+  }
   } catch (error) {
-    send('error', { message: error instanceof Error ? error.message : String(error) });
+    send('error', { message: formatPluginError(error) });
   }
 };
 
-initialize().catch((error) => send('error', { message: String(error) }));
+initialize().catch((error) => send('error', { message: formatPluginError(error) }));
