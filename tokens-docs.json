@@ -6,7 +6,133 @@
     "note": "Seed minimal. n8n doit enrichir uniquement les entrees component.*.description."
   },
   "component": {
-    "button": {},
-    "card": {}
+    "button": {
+      "description": "## Description\nComposant interactif rendu avec un élément HTML `<button>`. Le contrat MCP définit 3 variantes, 3 tailles et 3 états de prévisualisation statique.\n\n## Spec\n- La racine doit être un `<button>` avec la classe exacte `caba-button`, et l’état disabled doit utiliser l’attribut natif `disabled`.\n- Les axes à rendre sont strictement `variant` = `primary | secondary | ghost`, `size` = `sm | md | lg`, et `state` = `default | hover | disabled`.\n- La démo doit afficher la matrice complète 3 variantes × 3 états, avec les 3 tailles dans chaque cellule, via une prop de preview statique sans simulation d’événements.\n- Le contenu visible doit reprendre exactement le libellé `Button` et l’icône texte `+`, avec un gap de `8px` en `sm`/`md` et `12px` en `lg`.\n- Les dimensions Figma à respecter sont `88×36`, `108×44`, `128×52`, avec un radius de `8px` et des paddings `8/12`, `12/16`, `16/20` selon la taille.\n- Les tailles typographiques Figma sont `13px/18px` pour `sm`, `14px/20px` pour `md`, `16px/22px` pour `lg`; aucun token autorisé ne couvre exactement `13px`, `18px`, `20px` ou `22px`, donc ces valeurs numériques Figma doivent être utilisées telles quelles.\n\n## Do & Don't\n**Do**\n- Utiliser `primary` pour l’action dominante d’une zone.\n- Conserver un type explicite parmi `button`, `submit` ou `reset`.\n- Préserver le focus visible et garder un vrai élément `<button>`.\n\n**Don't**\n- Ne pas utiliser ce composant pour la navigation quand un lien est attendu.\n- Ne pas inventer de variante hors `primary`, `secondary` et `ghost`.\n- Ne pas remplacer l’état disabled natif par une simple apparence visuelle.\n\n## Code interactif (Live Editor)\n```jsx\nconst css = `\n.caba-demo {\n  font-family: var(--core-font-family-sans);\n  color: var(--semantic-color-text-primary);\n  background: var(--semantic-color-bg-surface);\n  padding: var(--core-space-16);\n}\n\n.caba-matrix {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: var(--core-space-16);\n}\n\n.caba-col {\n  display: flex;\n  flex-direction: column;\n  gap: var(--core-space-12);\n}\n\n.caba-col-title {\n  font-size: var(--core-font-size-14);\n  font-weight: var(--core-font-weight-medium);\n  line-height: 20px;\n  color: var(--semantic-color-text-primary);\n}\n\n.caba-state-card {\n  border: 1px solid var(--semantic-color-border-default);\n  border-radius: var(--core-radius-8);\n  padding: var(--core-space-12);\n  display: flex;\n  flex-direction: column;\n  gap: var(--core-space-12);\n  background: var(--semantic-color-bg-surface);\n}\n\n.caba-state-title {\n  font-size: 13px;\n  line-height: 18px;\n  font-weight: var(--core-font-weight-medium);\n  color: var(--semantic-color-text-secondary);\n  text-transform: capitalize;\n}\n\n.caba-size-stack {\n  display: flex;\n  flex-direction: column;\n  gap: var(--core-space-8);\n}\n\n.caba-button {\n  appearance: none;\n  border-style: solid;\n  border-color: transparent;\n  border-width: 0;\n  border-radius: var(--core-radius-8);\n  box-sizing: border-box;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: var(--core-font-family-sans);\n  font-weight: var(--core-font-weight-medium);\n  cursor: pointer;\n  outline: none;\n}\n\n.caba-button:focus-visible {\n  box-shadow: 0 0 0 2px var(--semantic-color-focus-ring);\n}\n\n.caba-button[disabled] {\n  cursor: not-allowed;\n}\n\n.caba-button__icon {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex: 0 0 auto;\n}\n\n.caba-button__label {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.caba-button--primary.caba-button--default {\n  background: var(--semantic-color-action-primary-default);\n  color: var(--semantic-color-text-on-brand);\n  border-color: var(--semantic-color-action-primary-default);\n}\n\n.caba-button--primary.caba-button--hover {\n  background: var(--semantic-color-action-primary-hover);\n  color: var(--semantic-color-text-on-brand);\n  border-color: var(--semantic-color-action-primary-default);\n}\n\n.caba-button--primary.caba-button--disabled {\n  background: var(--semantic-color-action-disabled);\n  color: var(--semantic-color-text-disabled);\n  border-color: var(--semantic-color-border-default);\n  opacity: 0.7200000286102295;\n}\n\n.caba-button--secondary.caba-button--default {\n  background: var(--semantic-color-bg-surface);\n  color: var(--semantic-color-text-primary);\n  border-color: var(--semantic-color-border-default);\n  border-width: 1px;\n}\n\n.caba-button--secondary.caba-button--hover {\n  background: var(--semantic-color-bg-surface-hover);\n  color: var(--semantic-color-text-brand);\n  border-color: var(--semantic-color-border-brand);\n  border-width: 1px;\n}\n\n.caba-button--secondary.caba-button--disabled {\n  background: var(--semantic-color-bg-disabled);\n  color: var(--semantic-color-text-disabled);\n  border-color: var(--semantic-color-border-default);\n  border-width: 1px;\n  opacity: 0.7200000286102295;\n}\n\n.caba-button--ghost.caba-button--default {\n  background: transparent;\n  color: var(--semantic-color-text-primary);\n  border-color: var(--semantic-color-border-default);\n  border-width: 1px;\n}\n\n.caba-button--ghost.caba-button--hover {\n  background: transparent;\n  color: var(--semantic-color-text-brand);\n  border-color: var(--semantic-color-border-default);\n  border-width: 1px;\n}\n\n.caba-button--ghost.caba-button--disabled {\n  background: transparent;\n  color: var(--semantic-color-text-disabled);\n  border-color: var(--semantic-color-border-default);\n  border-width: 1px;\n  opacity: 0.7200000286102295;\n}\n\n.caba-button--sm {\n  width: 88px;\n  height: 36px;\n  padding-top: var(--core-space-8);\n  padding-right: var(--core-space-12);\n  padding-bottom: var(--core-space-8);\n  padding-left: var(--core-space-12);\n  gap: var(--core-space-8);\n  font-size: 13px;\n  line-height: 18px;\n}\n\n.caba-button--md {\n  width: 108px;\n  height: 44px;\n  padding-top: var(--core-space-12);\n  padding-right: var(--core-space-16);\n  padding-bottom: var(--core-space-12);\n  padding-left: var(--core-space-16);\n  gap: var(--core-space-8);\n  font-size: var(--core-font-size-14);\n  line-height: 20px;\n}\n\n.caba-button--lg {\n  width: 128px;\n  height: 52px;\n  padding-top: var(--core-space-16);\n  padding-right: var(--core-space-20);\n  padding-bottom: var(--core-space-16);\n  padding-left: var(--core-space-20);\n  gap: var(--core-space-12);\n  font-size: var(--core-font-size-16);\n  line-height: 22px;\n}\n`;\n\nconst VARIANTS = ['primary', 'secondary', 'ghost'];\nconst SIZES = ['sm', 'md', 'lg'];\nconst STATES = ['default', 'hover', 'disabled'];\n\nfunction Button({\n  variant = 'primary',\n  size = 'md',\n  state = 'default',\n  icon = true,\n  children = 'Button',\n  type = 'button',\n  onClick\n}) {\n  const disabled = state === 'disabled';\n  const className = [\n    'caba-button',\n    'caba-button--' + variant,\n    'caba-button--' + size,\n    'caba-button--' + state\n  ].join(' ');\n\n  return (\n    <button\n      type={type}\n      className={className}\n      disabled={disabled}\n      onClick={onClick}\n    >\n      {icon ? <span className=\"caba-button__icon\">+</span> : null}\n      <span className=\"caba-button__label\">{children}</span>\n    </button>\n  );\n}\n\nconst Demo = () => (\n  <div className=\"caba-demo\">\n    <style>{css}</style>\n    <div className=\"caba-matrix\">\n      {VARIANTS.map((variant) => (\n        <div className=\"caba-col\" key={variant}>\n          <div className=\"caba-col-title\">{variant}</div>\n          {STATES.map((state) => (\n            <div className=\"caba-state-card\" key={state}>\n              <div className=\"caba-state-title\">{state}</div>\n              <div className=\"caba-size-stack\">\n                {SIZES.map((size) => (\n                  <Button\n                    key={size}\n                    variant={variant}\n                    size={size}\n                    state={state}\n                    icon={true}\n                    type=\"button\"\n                  >\n                    Button\n                  </Button>\n                ))}\n              </div>\n            </div>\n          ))}\n        </div>\n      ))}\n    </div>\n  </div>\n);\n\nrender(<Demo />);\n```",
+      "_meta": {
+        "workflowVersion": "ssot-v4",
+        "generatedAt": "2026-07-19T15:49:57.889Z",
+        "sourceHash": "fnv1a-a75b3f0a",
+        "componentTokenHash": "fnv1a-e58902d6",
+        "referencedTokenHash": "fnv1a-dbd8f384",
+        "figmaHash": "fnv1a-e0acb8f4",
+        "referencedTokenPaths": [
+          "semantic.color.action.disabled",
+          "semantic.color.action.primary.default",
+          "semantic.color.action.primary.hover",
+          "semantic.color.action.primary.pressed",
+          "semantic.color.bg.disabled",
+          "semantic.color.bg.surface",
+          "semantic.color.bg.surfaceHover",
+          "semantic.color.border.brand",
+          "semantic.color.border.default",
+          "semantic.color.border.subtle",
+          "semantic.color.focus.ring",
+          "semantic.color.icon.default",
+          "semantic.color.icon.muted",
+          "semantic.color.text.brand",
+          "semantic.color.text.disabled",
+          "semantic.color.text.onBrand",
+          "semantic.color.text.primary",
+          "semantic.color.text.secondary",
+          "core.space.8",
+          "core.space.12",
+          "core.space.16",
+          "core.space.20",
+          "core.font.size.14",
+          "core.font.size.16",
+          "core.font.weight.medium",
+          "core.font.family.sans",
+          "core.radius.8"
+        ],
+        "figmaMatchedKey": null,
+        "figmaCachedAt": null,
+        "variableCssSource": "main:build/css/variables.css",
+        "notes": [
+          "legacy_doc",
+          "missing_meta",
+          "workflow_version_changed"
+        ]
+      }
+    },
+    "card": {
+      "description": "## Description\nLa card Caba utilise une racine `<article>` avec deux tons exacts (`default`, `highlight`), deux modes media (`off`, `on`) et deux états (`default`, `hover`). Le contenu visible impose exactement le titre `Restaurant & Bars` et la description Figma fournie.\n\n## Spec\n- La racine doit être exactement un `<article>` avec la classe racine `caba-card`.\n- Les axes rendus sont strictement `tone` (`default`, `highlight`), `media` (`off`, `on`) et `state` (`default`, `hover`).\n- Les dimensions exactes sont `320px` de largeur, `168px` de hauteur sans media et `304px` avec media, avec un rayon de `12px`.\n- Le media interne apparaît uniquement quand `media=\"on\"` et mesure exactement `280px × 120px`.\n- Les fonds exacts sont `--semantic-color-bg-surface` / `--semantic-color-bg-surface-hover` pour `default`, et `--semantic-color-bg-brand-soft` / `--semantic-color-bg-brand` pour `highlight`.\n- La maquette fournie ne précise pas de padding de contenu; cette limite doit être conservée sans compléter par interprétation.\n\n## Do & Don't\n- Do utiliser pour présenter un contenu court dans une surface Caba.\n- Do respecter les axes Figma Tone, Media et State.\n- Do préférer `<article>` ou `<section>` selon le contexte sémantique; ici le contrat fourni utilise `<article>`.\n- Don't convertir la card en top/bottom ou en grille de tailles non présentes dans Figma.\n- Don't transformer la card en bouton complètement interactif.\n- Don't ajouter de rôle interactif si la carte ne mène pas à une action globale.\n\n## Code interactif (Live Editor)\n```jsx\nconst css = `\n.caba-card [class*=\"title\"], .caba-card h2, .caba-card h3 { font-size: 18px; line-height: 25px; }\n.caba-demo {\n  font-family: var(--core-font-family-sans);\n  color: var(--semantic-color-text-primary);\n  display: grid;\n  gap: 16px;\n}\n\n.caba-demo-tone {\n  display: grid;\n  gap: 16px;\n}\n\n.caba-demo-tone-label,\n.caba-demo-media-label,\n.caba-demo-state-label {\n  font-size: var(--typography-body-sm-font-size);\n  line-height: var(--typography-body-sm-line-height);\n  color: var(--semantic-color-text-secondary);\n  font-weight: var(--core-font-weight-regular);\n}\n\n.caba-demo-media-row {\n  display: grid;\n  gap: 14px;\n}\n\n.caba-demo-grid {\n  display: grid;\n  grid-template-columns: repeat(2, 320px);\n  gap: 16px;\n}\n\n.caba-demo-cell {\n  display: grid;\n  gap: 8px;\n}\n\n.caba-card {\n  width: 320px;\n  border-radius: var(--core-radius-12);\n  overflow: hidden;\n  box-sizing: border-box;\n  display: grid;\n  align-content: start;\n  color: var(--semantic-color-text-primary);\n}\n\n.caba-card--default.caba-card--off.caba-card--default-state {\n  height: 168px;\n  background: var(--semantic-color-bg-surface);\n  box-shadow: none;\n}\n\n.caba-card--default.caba-card--off.caba-card--hover-state {\n  height: 168px;\n  background: var(--semantic-color-bg-surface-hover);\n  box-shadow: 0px 12px 28px -12px var(--core-color-black);\n}\n\n.caba-card--default.caba-card--on.caba-card--default-state {\n  height: 304px;\n  background: var(--semantic-color-bg-surface);\n  box-shadow: none;\n}\n\n.caba-card--default.caba-card--on.caba-card--hover-state {\n  height: 304px;\n  background: var(--semantic-color-bg-surface-hover);\n  box-shadow: 0px 12px 28px -12px var(--core-color-black);\n}\n\n.caba-card--highlight.caba-card--off.caba-card--default-state {\n  height: 168px;\n  background: var(--semantic-color-bg-brand-soft);\n  box-shadow: none;\n}\n\n.caba-card--highlight.caba-card--off.caba-card--hover-state {\n  height: 168px;\n  background: var(--semantic-color-bg-brand);\n  box-shadow: 0px 12px 28px -12px var(--core-color-black);\n}\n\n.caba-card--highlight.caba-card--on.caba-card--default-state {\n  height: 304px;\n  background: var(--semantic-color-bg-brand-soft);\n  box-shadow: none;\n}\n\n.caba-card--highlight.caba-card--on.caba-card--hover-state {\n  height: 304px;\n  background: var(--semantic-color-bg-brand);\n  box-shadow: 0px 12px 28px -12px var(--core-color-black);\n}\n\n.caba-card__inner {\n  padding: 20px;\n  display: grid;\n  gap: 8px;\n  align-content: start;\n}\n\n.caba-card__media {\n  width: 280px;\n  height: 120px;\n  background: var(--core-color-neutral-700);\n}\n\n.caba-card__body {\n  display: grid;\n  gap: 8px;\n  align-content: start;\n}\n\n.caba-card__title {\n  margin: 0;\n  font-size: 18px;\n  line-height: 25px;\n  font-weight: var(--core-font-weight-bold);\n  color: var(--semantic-color-text-primary);\n}\n\n.caba-card__description {\n  margin: 0;\n  font-size: 14px;\n  line-height: 20px;\n  font-weight: var(--core-font-weight-regular);\n  color: var(--semantic-color-text-secondary);\n}\n`;\n\nfunction Card({ tone = \"default\", media = \"off\", state = \"default\", children, className = \"\" }) {\n  const classes = [\n    \"caba-card\",\n    tone === \"highlight\" ? \"caba-card--highlight\" : \"caba-card--default\",\n    media === \"on\" ? \"caba-card--on\" : \"caba-card--off\",\n    state === \"hover\" ? \"caba-card--hover-state\" : \"caba-card--default-state\",\n    className\n  ].filter(Boolean).join(\" \");\n\n  return (\n    <article className={classes}>\n      <div className=\"caba-card__inner\">\n        {media === \"on\" ? <div className=\"caba-card__media\" aria-hidden=\"true\" /> : null}\n        <div className=\"caba-card__body\">\n          <h2 className=\"caba-card__title\">Restaurant & Bars</h2>\n          <p className=\"caba-card__description\">\n            Une carte éditable pour mettre en avant une destination, une offre ou une section de menu.\n          </p>\n          {children}\n        </div>\n      </div>\n    </article>\n  );\n}\n\nconst tones = [\"default\", \"highlight\"];\nconst medias = [\"off\", \"on\"];\nconst states = [\"default\", \"hover\"];\n\nconst GeneratedDemo = () => (\n  <div className=\"caba-demo\">\n    <style>{css}</style>\n    {tones.map((tone) => (\n      <div key={tone} className=\"caba-demo-tone\">\n        <div className=\"caba-demo-tone-label\">{tone}</div>\n        {medias.map((media) => (\n          <div key={media} className=\"caba-demo-media-row\">\n            <div className=\"caba-demo-media-label\">{media}</div>\n            <div className=\"caba-demo-grid\">\n              {states.map((state) => (\n                <div key={state} className=\"caba-demo-cell\">\n                  <div className=\"caba-demo-state-label\">{state}</div>\n                  <Card tone={tone} media={media} state={state} />\n                </div>\n              ))}\n            </div>\n          </div>\n        ))}\n      </div>\n    ))}\n  </div>\n);\n\nconst Demo = () => (\n  <div>\n    <style>{css}</style>\n    <div style={{ display: \"grid\", gap: \"16px\", gridTemplateColumns: \"repeat(2, 320px)\" }}>\n      <Card tone=\"default\" media=\"off\" state=\"default\" />\n      <Card tone=\"default\" media=\"off\" state=\"hover\" />\n      <Card tone=\"default\" media=\"on\" state=\"default\" />\n      <Card tone=\"default\" media=\"on\" state=\"hover\" />\n      <Card tone=\"highlight\" media=\"off\" state=\"default\" />\n      <Card tone=\"highlight\" media=\"off\" state=\"hover\" />\n      <Card tone=\"highlight\" media=\"on\" state=\"default\" />\n      <Card tone=\"highlight\" media=\"on\" state=\"hover\" />\n    </div>\n  </div>\n);\nrender(<Demo />);\n```",
+      "_meta": {
+        "workflowVersion": "ssot-v4",
+        "generatedAt": "2026-07-19T15:49:58.075Z",
+        "sourceHash": "fnv1a-c95e1824",
+        "componentTokenHash": "fnv1a-7f91d04b",
+        "referencedTokenHash": "fnv1a-e8039fe6",
+        "figmaHash": "fnv1a-c65dfa1d",
+        "referencedTokenPaths": [
+          "core.color.white",
+          "core.color.black",
+          "core.color.orange.400",
+          "core.color.orange.700",
+          "core.color.neutral.700",
+          "semantic.color.bg.elevated",
+          "semantic.color.bg.surface",
+          "semantic.color.bg.surfaceHover",
+          "semantic.color.bg.brandSoft",
+          "semantic.color.bg.brand",
+          "semantic.color.border.default",
+          "semantic.color.text.primary",
+          "semantic.color.text.secondary",
+          "core.space.16",
+          "core.space.20",
+          "core.radius.8",
+          "core.radius.12",
+          "core.font.family.sans",
+          "core.font.weight.bold",
+          "core.font.weight.regular",
+          "typography.heading.h2.fontSize",
+          "typography.heading.h2.lineHeight",
+          "typography.body.sm.fontSize",
+          "typography.body.sm.lineHeight"
+        ],
+        "figmaMatchedKey": null,
+        "figmaCachedAt": null,
+        "variableCssSource": "main:build/css/variables.css",
+        "notes": [
+          "legacy_doc",
+          "missing_meta",
+          "workflow_version_changed"
+        ]
+      }
+    },
+    "spark": {
+      "description": "## Description\n`spark` est un composant auto-détecté rendu sur une racine `<div>` avec la classe `.caba-spark`. Le blueprint Figma fourni montre une unique variante avec le contenu texte exact `spark`.\n\n## Spec\n- La racine HTML doit être un `<div>` avec la classe exacte `.caba-spark`.\n- `component.semanticHtmlKnown` vaut `false` : aucune sémantique HTML supplémentaire ne peut être attribuée au composant d’après ce MCP.\n- Aucun axe, variant, size ou state n’est déclaré côté `component`; le blueprint Figma expose une seule variante nommée `spark`.\n- Le shell Figma mesure `16px` par `16px`, tandis que le nœud de contenu `spark` mesure `10px` par `17px`.\n- Le texte visible doit être exactement `spark`, avec `font-family: Inter`, `font-size: 14px`, `font-weight: 700` et `line-height: 17px` d’après Figma.\n- Les couleurs et variables CSS doivent se limiter à `allowedCssVars`; ici la couleur blanche Figma peut être reliée à `--core-color-white`, sans fallback.\n\n## Do & Don't\n- Do utiliser la classe racine `.caba-spark`.\n- Do reproduire exactement le texte visible `spark`.\n- Do garder HTML, CSS et logique JS dans un seul bloc `react-live`.\n- Don't ajouter des axes, props, slots ou états non présents dans le MCP.\n- Don't attribuer un rôle, une sémantique HTML ou un comportement interactif non documenté.\n- Don't utiliser de variable CSS hors de `allowedCssVars` ni de fallback `var(...)`.\n\n## Code interactif (Live Editor)\n```jsx\nconst css = `\n.caba-spark {\n  width: 16px;\n  height: 16px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n}\n\n.caba-spark__text {\n  font-family: var(--core-font-family-sans);\n  font-size: var(--core-font-size-14);\n  font-weight: var(--core-font-weight-bold);\n  line-height: 17px;\n  color: var(--core-color-white);\n  width: 10px;\n  height: 17px;\n  display: inline-block;\n}\n\n.spark-demo {\n  display: grid;\n  gap: 16px;\n}\n\n.spark-demo__table {\n  border-collapse: collapse;\n}\n\n.spark-demo__table td,\n.spark-demo__table th {\n  padding: 10px;\n  text-align: left;\n  vertical-align: middle;\n}\n\n.spark-demo__label {\n  font-family: var(--core-font-family-sans);\n  font-size: var(--core-font-size-14);\n  font-weight: var(--core-font-weight-bold);\n  line-height: 17px;\n  color: var(--core-color-white);\n}\n`;\n\nconst VARIANTS = [\n  { key: \"spark\", text: \"spark\" }\n];\n\nfunction Spark({ text = \"spark\", className = \"\" }) {\n  return (\n    <div className={`caba-spark${className ? ` ${className}` : \"\"}`}>\n      <span className=\"caba-spark__text\">{text}</span>\n    </div>\n  );\n}\n\nconst Demo = () => (\n  <div className=\"spark-demo\">\n    <style>{css}</style>\n    <table className=\"spark-demo__table\">\n      <tbody>\n        {VARIANTS.map((item) => (\n          <tr key={item.key}>\n            <th className=\"spark-demo__label\">{item.text}</th>\n            <td>\n              <Spark text={item.text} />\n            </td>\n          </tr>\n        ))}\n      </tbody>\n    </table>\n  </div>\n);\n\nrender(<Demo />);\n```",
+      "_meta": {
+        "workflowVersion": "ssot-v4",
+        "generatedAt": "2026-07-19T15:49:58.245Z",
+        "sourceHash": "fnv1a-a320495d",
+        "componentTokenHash": "fnv1a-5aa3d22d",
+        "referencedTokenHash": "fnv1a-d9af79fa",
+        "figmaHash": "fnv1a-e943d17b",
+        "referencedTokenPaths": [
+          "core.color.white",
+          "core.font.family.sans",
+          "core.font.lineHeight.16",
+          "core.font.size.14",
+          "core.font.size.16",
+          "core.font.weight.bold",
+          "core.radius.16",
+          "core.space.10",
+          "core.space.16",
+          "semantic.color.icon.default",
+          "semantic.color.text.primary",
+          "typography.body.md.fontSize",
+          "typography.body.sm.fontSize",
+          "typography.label.button.fontSize"
+        ],
+        "figmaMatchedKey": null,
+        "figmaCachedAt": null,
+        "variableCssSource": "main:build/css/variables.css",
+        "notes": [
+          "legacy_doc",
+          "missing_meta",
+          "workflow_version_changed"
+        ]
+      }
+    }
   }
 }
