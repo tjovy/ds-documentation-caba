@@ -229,7 +229,9 @@
         if (message.type === 'push-complete') {
           busy(false);
           elements.token.value = '';
-          const prefix = message.status === 'unchanged' ? 'Aucun changement à pousser.' : 'tokens.json envoyé sur GitHub.';
+          const prefix = message.status === 'unchanged'
+            ? 'Aucun changement à pousser.'
+            : 'tokens.json envoyé sur GitHub, génération CSS déclenchée.';
           status(`${prefix} ${message.variableCount} variables, ${message.collectionCount} collections et ${message.componentCount} composants.`, 'success');
           return;
         }
