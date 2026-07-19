@@ -703,6 +703,20 @@ function send(type: string, payload: Record<string, unknown> = {}): void {
   figma.ui.postMessage({ type, ...payload });
 }
 
+function formatPluginError(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (isObject(error) && typeof error.message === 'string') return error.message;
+
+  try {
+    const serialized = JSON.stringify(error);
+    if (serialized && serialized !== '{}') return serialized;
+  } catch {
+    // Fall through to a generic message when a platform object is not serializable.
+  }
+
+  return String(error);
+}
+
 async function initialize(): Promise<void> {
   const settings = await loadSettings();
   send('init', {
@@ -751,10 +765,10 @@ figma.ui.onmessage = async (message: {
         pushInProgress = false;
       }
       return;
-    }
+  }
   } catch (error) {
-    send('error', { message: error instanceof Error ? error.message : String(error) });
+    send('error', { message: formatPluginError(error) });
   }
 };
 
-initialize().catch((error) => send('error', { message: String(error) }));
+initialize().catch((error) => send('error', { message: formatPluginError(error) }));
