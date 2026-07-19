@@ -704,10 +704,15 @@ function send(type: string, payload: Record<string, unknown> = {}): void {
 }
 
 function formatPluginError(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  if (isObject(error) && typeof error.message === 'string') return error.message;
+  const nestedMessage = isObject(error)
+    ? error.message
+    : error instanceof Error
+      ? (error as unknown as { message?: unknown }).message
+      : undefined;
+  if (typeof nestedMessage === 'string' && nestedMessage) return nestedMessage;
 
   try {
+    if (nestedMessage !== undefined) return JSON.stringify(nestedMessage);
     const serialized = JSON.stringify(error);
     if (serialized && serialized !== '{}') return serialized;
   } catch {
